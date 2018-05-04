@@ -1,12 +1,16 @@
 import { Component } from '@angular/core';
 import { AlertController } from 'ionic-angular';
+import { MenuController } from 'ionic-angular';
+import { NavController } from 'ionic-angular';
 
 @Component({
   selector: 'page-home',
   templateUrl: 'home.html'
 })
 export class Home {
-  constructor(public alertCtrl: AlertController){}
+  constructor(public alertCtrl: AlertController, public menuCtrl: MenuController, private navCtrl: NavController){
+	  this.menuCtrl.enable(true);
+  }
   
   showConfirmAlert() {
     let confirm = this.alertCtrl.create({
@@ -29,5 +33,5 @@ export class Home {
     });
     confirm.present();
   }
-  
+
 }

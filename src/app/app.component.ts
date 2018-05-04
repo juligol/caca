@@ -1,10 +1,10 @@
 import { Component, ViewChild } from '@angular/core';
 
 import { Platform, MenuController, Nav } from 'ionic-angular';
-
 import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
 import { ListPage } from '../pages/list/list';
 import { Home } from '../pages/home/home';
+import { Register } from '../pages/register/register';
 import { Login } from '../pages/login/login';
 
 import { StatusBar } from '@ionic-native/status-bar';
