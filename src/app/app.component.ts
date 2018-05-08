@@ -34,6 +34,7 @@ export class MyApp {
       { title: 'Home', component: Home },
       { title: 'Hello Ionic', component: HelloIonicPage },
       { title: 'My First List', component: ListPage },
+      { title: 'Cerrar sesión', component: Login },
     ];
   }
 
