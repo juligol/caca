@@ -6,6 +6,7 @@ import { Home } from '../home/home';
 import { Register } from '../register/register';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { Http } from '@angular/http';
+import { AlertController } from 'ionic-angular';
 
 @Component({
   selector: 'page-login',
@@ -20,7 +21,8 @@ export class Login {
 				public navCtrl: NavController, 
 				private formBuilder: FormBuilder,
 				public menuCtrl: MenuController,
-				public http: Http){
+				public http: Http,
+				public alertCtrl: AlertController){
 					
 		this.menuCtrl.enable(false);
 					
@@ -29,39 +31,62 @@ export class Login {
 			password: ['', Validators.required]
 		});
 		
-		this.data.username = '';
-		 this.data.response = '';
-		 this.http = http;
+		//this.data.response = '';
+		this.http = http;
 	}
-	
-	submit() {
-		 var link = 'http://nikola-breznjak.com/_testings/ionicPHP/api.php';
-		 var myData = JSON.stringify({username: this.data.username});
-		 
-		 this.http.post(link, myData)
-		 .subscribe(data => {
-		 this.data.response = data["_body"]; //https://stackoverflow.com/questions/39574305/property-body-does-not-exist-on-type-response
-		 }, error => {
-		 console.log("Oooops!");
-		 });
-	 }
 	
 	crearCuenta(){
 		this.navCtrl.push(Register);
 	}
 	
 	loginForm(){
-		//this.cargando();
-		//setTimeout(() => {this.navCtrl.push(Home);}, 1000);
-		//setTimeout(() => {this.navCtrl.setRoot(Home);}, 1000);
-	}
-  
-	cargando() {
+		//Mostrar loader mientras busca los datos en la base
 		let loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
-			duration: 1000
 		});
 		loader.present();
+		loader.dismiss().then(() => { this.usuario(); });
+		/*this.usuario().then((x) => {
+			if(x)
+				loader.dismiss();
+		});*/
+	}
+	
+	usuario(){
+		return new Promise((resolve) => {
+			var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+			this.form.value.action = "login";
+			var myData = JSON.stringify(this.form.value);
+			this.http.post(link, myData).subscribe(data => {
+				//this.data.response = data["_body"];
+				var usuario = JSON.parse(data["_body"]);
+				if(usuario)
+				{
+					//this.navCtrl.push(Home);
+					this.navCtrl.setRoot(Home);
+				}
+				else
+				{
+					this.showError("E-mail o contraseña incorrectos!!");
+				}
+			}, 
+			error => {
+				console.log("Oooops!");
+				this.showError('Oooops! Por favor intente de nuevo!');
+			});
+			resolve(true);
+		});
+		
+		
+	}
+	
+	showError(texto) {
+		let alert = this.alertCtrl.create({
+		  title: 'Error',
+		  subTitle: texto,
+		  buttons: ['OK']
+		});
+		alert.present();
 	}
 	
 	public type = 'password';

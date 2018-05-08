@@ -1,8 +1,11 @@
 import { Component } from '@angular/core';
 import { AlertController } from 'ionic-angular';
 import { MenuController } from 'ionic-angular';
-import { NavController } from 'ionic-angular';
+import { NavController, NavParams } from 'ionic-angular';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
+import { LoadingController } from 'ionic-angular';
+import { Http } from '@angular/http';
+import { ItemDetailsPage } from '../item-details/item-details';
 
 declare var google;
 
@@ -12,33 +15,57 @@ declare var google;
 })
 export class Home {
 
-  map: any;
+	data:any = {};
+	map: any;
+	items: any;
 
-  constructor(public alertCtrl: AlertController, public menuCtrl: MenuController, private navCtrl: NavController, private geolocation: Geolocation){
-	  this.menuCtrl.enable(true);
-  }
+	constructor(public loadingCtrl: LoadingController, 
+				public alertCtrl: AlertController, 
+				public menuCtrl: MenuController, 
+				private navCtrl: NavController, 
+				private geolocation: Geolocation,
+				public http: Http,
+				public navParams: NavParams){
+				
+		this.menuCtrl.enable(true);
+		  
+		//Mostrar loader mientras busca los datos en la base
+		let loader = this.loadingCtrl.create({
+			content: "Por favor espere...",
+		});
+		loader.present();
+		loader.dismiss().then(() => { this.cargarViajes(); });
+
+		this.data.response = '';
+		this.http = http;		
+	}
   
-  showConfirmAlert() {
-    let confirm = this.alertCtrl.create({
-      title: 'Bienvenido!!',
-      message: 'Usted es carck?',
-      buttons: [
-        {
-          text: 'No',
-          handler: () => {
-            console.log('No es crack');
-          }
-        },
-        {
-          text: 'Si',
-          handler: () => {
-            console.log('Es crack');
-          }
-        }
-      ]
-    });
-    confirm.present();
-  }
+	cargarViajes(){
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		var myData = JSON.stringify({email: "a", password: "s", action: "viajes"});
+		this.http.post(link, myData).subscribe(data => {
+			var viajes = JSON.parse(data["_body"]);
+			if(viajes.length > 0)
+			{
+				this.items = viajes;
+				console.log(this.items);
+				return viajes;
+			}
+			else
+			{
+				return "No hay viajes Disponibles";
+			}
+		}, 
+		error => {
+			console.log("Oooops!");
+		});
+	}
+	
+	verItem(event, item) {
+		this.navCtrl.push(ItemDetailsPage, {
+		  item: item
+		});
+	}
   
   ionViewDidLoad(){
     this.getPosition();

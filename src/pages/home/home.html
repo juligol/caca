@@ -9,7 +9,16 @@
 
 
 <ion-content padding>
-	<h3>Bienvenido!</h3>
-	<button ion-button color="primary" (click)="showConfirmAlert()" round>Alert</button>
+	<h3>Listado de viajes</h3>
+	<ion-list>
+		<button ion-item *ngFor="let item of items" (click)="verItem($event, item)">
+			{{item.origen}} - {{item.destino}} - {{item.proveedor}}
+		</button>
+	</ion-list>
+	<ion-card>
+		 <ion-card-content>
+			<b>{{data.response}}</b>
+		 </ion-card-content>
+	</ion-card>
 	<div id="map"></div>
 </ion-content>
