@@ -7,6 +7,8 @@ import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { ItemDetailsPage } from '../item-details/item-details';
 import { Storage } from '@ionic/storage';
+import { Diagnostic } from '@ionic-native/diagnostic';
+import { LocationAccuracy } from '@ionic-native/location-accuracy';
 
 declare var google;
 
@@ -26,7 +28,9 @@ export class Home {
 				private geolocation: Geolocation,
 				public http: Http,
 				public navParams: NavParams,
-				private storage: Storage){
+				private storage: Storage,
+				private diagnostic: Diagnostic,
+				private locationAccuracy: LocationAccuracy){
 				
 		this.menuCtrl.enable(true);
 		
@@ -39,9 +43,34 @@ export class Home {
 			content: "Por favor espere...",
 		});
 		this.loader.present();
-		this.cargarViajes();
+		this.verificarGPS();
 		
 		this.http = http;		
+	}
+	
+	verificarGPS(){
+		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
+		if(canRequest) {
+			// the accuracy option will be ignored by iOS
+			this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+			  () => this.cargarViajes(),
+			  error => this.verificarGPS()
+			  //error => this.presentError("Necesita acivarlo para utilizar la app")
+			);
+		  }else{
+			this.presentError("Error");
+		  }
+
+		});
+	}
+	
+	presentError(mensaje) {
+		let alert = this.alertCtrl.create({
+			title: 'GPS',
+			subTitle: mensaje,
+			buttons: ['Cerrar']
+		});
+		alert.present();
 	}
   
 	cargarViajes(){
@@ -108,5 +137,5 @@ export class Home {
       mapEle.classList.add('show-map');
     });
   }
-
+ 
 }

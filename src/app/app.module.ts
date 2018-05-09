@@ -7,6 +7,8 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { Geolocation } from '@ionic-native/geolocation';
 import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
+import { Diagnostic } from '@ionic-native/diagnostic';
+import { LocationAccuracy } from '@ionic-native/location-accuracy';
 
 //------------------------------Pages----------------------------------------
 import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
@@ -49,7 +51,9 @@ import { Logout } from '../pages/logout/logout';
     StatusBar,
     SplashScreen,
 	Geolocation,
-    {provide: ErrorHandler, useClass: IonicErrorHandler}
+    {provide: ErrorHandler, useClass: IonicErrorHandler},
+	Diagnostic,
+	LocationAccuracy
   ]
 })
 
