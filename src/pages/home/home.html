@@ -7,18 +7,23 @@
   </ion-navbar>
 </ion-header>
 
-
 <ion-content padding>
 	<h3>Listado de viajes</h3>
-	<ion-list>
-		<button ion-item *ngFor="let item of items" (click)="verItem($event, item)">
-			{{item.origen}} - {{item.destino}} - {{item.proveedor}}
-		</button>
-	</ion-list>
-	<ion-card>
-		 <ion-card-content>
-			<b>{{data.response}}</b>
-		 </ion-card-content>
-	</ion-card>
+	<ion-grid *ngFor="let item of items">
+		<ion-row>
+			<ion-col col-3>
+				{{item.origen}} 
+			</ion-col>
+			<ion-col col-3>
+				{{item.destino}}
+			</ion-col>
+			<ion-col col-3>
+				{{item.proveedor}}
+			</ion-col>
+			<ion-col col-2>
+				<button (click)="verItem($event, item)">Ver</button>
+			</ion-col>
+		</ion-row>
+	</ion-grid>
 	<div id="map"></div>
 </ion-content>

@@ -7,6 +7,7 @@ import { Register } from '../register/register';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
+import { Storage } from '@ionic/storage';
 
 @Component({
   selector: 'page-login',
@@ -15,16 +16,22 @@ import { AlertController } from 'ionic-angular';
 
 export class Login {
 	private form : FormGroup;
-	data:any = {};
+	//data:any = {};
 	
 	constructor(public loadingCtrl: LoadingController, 
 				public navCtrl: NavController, 
 				private formBuilder: FormBuilder,
 				public menuCtrl: MenuController,
 				public http: Http,
-				public alertCtrl: AlertController){
+				public alertCtrl: AlertController,
+				private storage: Storage){
 					
 		this.menuCtrl.enable(false);
+		
+		this.storage.get('user').then((val) => {
+			if(val)
+				this.navCtrl.setRoot(Home);
+		});
 					
 		this.form = this.formBuilder.group({
 			email: ['', Validators.compose([Validators.required, Validators.email])],
@@ -40,44 +47,25 @@ export class Login {
 	}
 	
 	loginForm(){
-		//Mostrar loader mientras busca los datos en la base
-		let loader = this.loadingCtrl.create({
-			content: "Por favor espere...",
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		this.form.value.action = "login";
+		var myData = JSON.stringify(this.form.value);
+		this.http.post(link, myData).subscribe(data => {
+			//this.data.response = data["_body"];
+			var usuario = JSON.parse(data["_body"]);
+			if(usuario)
+			{
+				this.storage.set('user', usuario).then(() => { this.navCtrl.setRoot(Home); });
+			}
+			else
+			{
+				this.showError("E-mail o contraseña incorrectos!!");
+			}
+		}, 
+		error => {
+			console.log("Oooops!");
+			this.showError('Oooops! Por favor intente de nuevo!');
 		});
-		loader.present();
-		loader.dismiss().then(() => { this.usuario(); });
-		/*this.usuario().then((x) => {
-			if(x)
-				loader.dismiss();
-		});*/
-	}
-	
-	usuario(){
-		return new Promise((resolve) => {
-			var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
-			this.form.value.action = "login";
-			var myData = JSON.stringify(this.form.value);
-			this.http.post(link, myData).subscribe(data => {
-				//this.data.response = data["_body"];
-				var usuario = JSON.parse(data["_body"]);
-				if(usuario)
-				{
-					//this.navCtrl.push(Home);
-					this.navCtrl.setRoot(Home);
-				}
-				else
-				{
-					this.showError("E-mail o contraseña incorrectos!!");
-				}
-			}, 
-			error => {
-				console.log("Oooops!");
-				this.showError('Oooops! Por favor intente de nuevo!');
-			});
-			resolve(true);
-		});
-		
-		
 	}
 	
 	showError(texto) {

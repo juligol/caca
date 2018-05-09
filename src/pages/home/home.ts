@@ -6,6 +6,7 @@ import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { ItemDetailsPage } from '../item-details/item-details';
+import { Storage } from '@ionic/storage';
 
 declare var google;
 
@@ -14,10 +15,9 @@ declare var google;
   templateUrl: 'home.html'
 })
 export class Home {
-
-	data:any = {};
 	map: any;
-	items: any;
+	items: any = [];
+	loader: any;
 
 	constructor(public loadingCtrl: LoadingController, 
 				public alertCtrl: AlertController, 
@@ -25,18 +25,22 @@ export class Home {
 				private navCtrl: NavController, 
 				private geolocation: Geolocation,
 				public http: Http,
-				public navParams: NavParams){
+				public navParams: NavParams,
+				private storage: Storage){
 				
 		this.menuCtrl.enable(true);
+		
+		this.storage.get('user').then((val) => {
+			console.log('Hola ' + val.nombre);
+		});
 		  
 		//Mostrar loader mientras busca los datos en la base
-		let loader = this.loadingCtrl.create({
+		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
 		});
-		loader.present();
-		loader.dismiss().then(() => { this.cargarViajes(); });
-
-		this.data.response = '';
+		this.loader.present();
+		this.cargarViajes();
+		
 		this.http = http;		
 	}
   
@@ -48,16 +52,13 @@ export class Home {
 			if(viajes.length > 0)
 			{
 				this.items = viajes;
-				console.log(this.items);
-				return viajes;
+				//console.log(this.items);
 			}
-			else
-			{
-				return "No hay viajes Disponibles";
-			}
+			this.loader.dismiss();
 		}, 
 		error => {
 			console.log("Oooops!");
+			this.loader.dismiss();
 		});
 	}
 	

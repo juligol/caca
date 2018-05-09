@@ -6,6 +6,7 @@ import { ListPage } from '../pages/list/list';
 import { Home } from '../pages/home/home';
 import { Register } from '../pages/register/register';
 import { Login } from '../pages/login/login';
+import { Logout } from '../pages/logout/logout';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
@@ -34,7 +35,7 @@ export class MyApp {
       { title: 'Home', component: Home },
       { title: 'Hello Ionic', component: HelloIonicPage },
       { title: 'My First List', component: ListPage },
-      { title: 'Cerrar sesión', component: Login },
+      { title: 'Cerrar sesión', component: Logout },
     ];
   }
 
