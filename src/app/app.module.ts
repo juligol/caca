@@ -12,23 +12,25 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy';
 
 //------------------------------Pages----------------------------------------
 import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
-import { ItemDetailsPage } from '../pages/item-details/item-details';
+import { DetalleViaje } from '../pages/detalle_viaje/detalle_viaje';
 import { ListPage } from '../pages/list/list';
 import { Home } from '../pages/home/home';
 import { Login } from '../pages/login/login';
 import { Register } from '../pages/register/register';
 import { Logout } from '../pages/logout/logout';
+import { Viaje } from '../pages/viaje/viaje';
 
 @NgModule({
   declarations: [
     MyApp,
     HelloIonicPage,
-    ItemDetailsPage,
     ListPage,
 	Home,
 	Login,
 	Register,
-	Logout
+	Logout,
+	Viaje,
+    DetalleViaje
   ],
   imports: [
     BrowserModule,
@@ -40,12 +42,13 @@ import { Logout } from '../pages/logout/logout';
   entryComponents: [
     MyApp,
     HelloIonicPage,
-    ItemDetailsPage,
     ListPage,
 	Home,
 	Login,
 	Register,
-	Logout
+	Logout,
+	Viaje,
+    DetalleViaje
   ],
   providers: [
     StatusBar,

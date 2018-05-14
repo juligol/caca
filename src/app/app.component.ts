@@ -7,6 +7,8 @@ import { Home } from '../pages/home/home';
 import { Register } from '../pages/register/register';
 import { Login } from '../pages/login/login';
 import { Logout } from '../pages/logout/logout';
+import { Viaje } from '../pages/viaje/viaje';
+import { DetalleViaje } from '../pages/detalle_viaje/detalle_viaje';
 
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';

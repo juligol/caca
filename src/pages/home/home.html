@@ -8,22 +8,28 @@
 </ion-header>
 
 <ion-content padding>
-	<h3>Listado de viajes</h3>
+	<h3 text-center>Listado de viajes</h3>
 	<ion-grid *ngFor="let item of items">
 		<ion-row>
 			<ion-col col-3>
+				<br>
 				{{item.origen}} 
 			</ion-col>
 			<ion-col col-3>
+				<br>
 				{{item.destino}}
 			</ion-col>
-			<ion-col col-3>
+			<ion-col col-2>
+				<br>
 				{{item.proveedor}}
 			</ion-col>
-			<ion-col col-2>
-				<button (click)="verItem($event, item)">Ver</button>
+			<ion-col col-3>
+				<button  ion-button (click)="comenzar($event, item)" color="secondary">Comenzar</button>
+				<button  ion-button (click)="verItem($event, item)">Ver</button>
 			</ion-col>
 		</ion-row>
 	</ion-grid>
-	<div id="map"></div>
+	<ion-infinite-scroll (ionInfinite)="doInfinite($event)">
+		<ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más viajes..."></ion-infinite-scroll-content>
+	</ion-infinite-scroll>
 </ion-content>
