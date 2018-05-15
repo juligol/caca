@@ -14,3 +14,28 @@
 // To declare rules for a specific mode, create a child rule
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
+
+.alertCustomCss {
+	.alert-wrapper{
+		opacity: 1;
+		transform: scale(1);
+		width: 50%;
+		max-width: 100%;
+	}	
+	ul {
+		list-style-type: none;
+		margin: 0;
+		padding: 0;
+	}
+	 
+	li {
+		color: black;
+		padding: 3%;
+		font: 200 /1.5 Helvetica, Verdana, sans-serif;
+		border-bottom: 1px solid #ccc;
+	}
+	 
+	li:last-child {
+		border: none;
+	}
+}

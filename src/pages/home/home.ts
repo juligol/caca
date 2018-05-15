@@ -17,8 +17,11 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy';
 
 export class Home {
 	viajes = [];
+	viajesAux = [];
+	busqueda: string = '';
 	items = [];
 	contador: any;
+	selectOptions: any;
 	loader: any;
 
 	constructor(public loadingCtrl: LoadingController, 
@@ -44,6 +47,10 @@ export class Home {
 		this.loader.present();
 		this.cargarViajes();
 		
+		this.selectOptions = {
+		  title: 'Viaje'
+		};
+		
 		this.http = http;		
 	}
   
@@ -55,10 +62,7 @@ export class Home {
 			if(viajes.length > 0)
 			{
 				this.viajes = viajes;
-				this.contador = 15;
-				for (var i = 0; i < this.contador; i++) {
-					this.items.push(this.viajes[i]);
-				}
+				this.inicializarListado();
 				//console.log(this.items);
 			}
 			this.loader.dismiss();
@@ -67,6 +71,14 @@ export class Home {
 			console.log("Oooops!");
 			this.loader.dismiss();
 		});
+	}
+	
+	inicializarListado(){
+		this.contador = 15;
+		this.items = [];
+		for (var i = 0; i < this.contador; i++) {
+			this.items.push(this.viajes[i]);
+		}
 	}
 	
 	doInfinite(infiniteScroll) {
@@ -79,6 +91,42 @@ export class Home {
 			console.log('Fin de la sincro');
 			infiniteScroll.complete();
 		}, 500);
+	}
+	
+	getItems(ev: any) {
+		this.inicializarListado();
+		// set val to the value of the searchbar
+		this.busqueda = ev.target.value;
+		// if the value is an empty string don't filter the items
+		if (this.busqueda && this.busqueda.trim() != '') {
+			this.items = this.items.filter((item) => {
+				return (item.origen && item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
+			})
+		}
+	}
+	
+	
+	presentPrompt(event, item) {
+		var origen = item.origen.split(",")[0];
+		var destino = item.destino.split(",")[0];
+		var lista = "<ul><li>" + origen + "</li><li>" + destino + "</li><li>" + item.proveedor + "</li></ul>"
+		let alert = this.alertCtrl.create({
+			title: 'Viaje ' + item.id,
+			message: lista,
+			buttons: [
+			  {
+				text: 'Cancel',
+				role: 'cancel',
+				handler: () => {console.log('Cancel clicked');}
+			  },
+			  {
+				text: 'Comenzar',
+				handler: () => {this.comenzar(event, item);}
+			  }
+			],
+			cssClass: 'alertCustomCss'
+		});
+		alert.present();
 	}
 	
 	comenzar(event, item) {
