@@ -1,13 +1,18 @@
 <ion-header>
   <ion-navbar>
-    <button menuToggle *ngIf="!selectedItem">
+    <button menuToggle *ngIf="!viajeActual">
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Item Details</ion-title>
+	<ion-title>Viaje {{viajeActual.id}}</ion-title>
+	<ion-buttons end>
+		<button ion-button color="danger" (click)="finalizarViaje()">Finalizar</button>
+    </ion-buttons>
   </ion-navbar>
 </ion-header>
 
 <ion-content>
-  <h3 text-center *ngIf="selectedItem">Viaje {{selectedItem.id}}</h3>
   <div id="map"></div>
+  <ion-scroll scrollY="true" class="scroll">
+    <div padding-horizontal id="panel"></div>
+  </ion-scroll>
 </ion-content>

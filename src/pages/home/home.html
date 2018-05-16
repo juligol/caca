@@ -8,9 +8,9 @@
 </ion-header>
 
 <ion-content padding>
-	<ion-searchbar (ionInput)="getItems($event)"></ion-searchbar>
+	<ion-searchbar (ionInput)="getItems($event)" placeholder="Buscar" ></ion-searchbar>
 	<ion-list>
-	  <ion-item *ngFor="let item of items" (click)="presentPrompt($event, item)">
+	  <ion-item *ngFor="let item of items" (click)="verViaje($event, item)">
 		{{ item.origen }}
 	  </ion-item>
 	</ion-list>

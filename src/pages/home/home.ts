@@ -105,8 +105,7 @@ export class Home {
 		}
 	}
 	
-	
-	presentPrompt(event, item) {
+	verViaje(event, item) {
 		var origen = item.origen.split(",")[0];
 		var destino = item.destino.split(",")[0];
 		var lista = "<ul><li>" + origen + "</li><li>" + destino + "</li><li>" + item.proveedor + "</li></ul>"
@@ -124,7 +123,7 @@ export class Home {
 				handler: () => {this.comenzar(event, item);}
 			  }
 			],
-			cssClass: 'alertCustomCss'
+			cssClass: 'verViajeCss'
 		});
 		alert.present();
 	}
@@ -141,16 +140,21 @@ export class Home {
 	}
 	
 	verificarGPS(event, item){
+		this.loader = this.loadingCtrl.create({
+			content: "Por favor espere...",
+		});
+		this.loader.present();
 		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
-		if(canRequest) {
-			// the accuracy option will be ignored by iOS
-			this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-			  () => this.navCtrl.push(Viaje, { item: item }),
-			  error => console.log("Debe activar la ubicación")
-			);
-		  }else{
-			this.presentError("Error");
-		  }
+			this.loader.dismiss();
+			if(canRequest) {
+				// the accuracy option will be ignored by iOS
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.navCtrl.push(Viaje, { item: item }),
+					error => console.log("Debe activar la ubicación")
+				);
+			}else{
+				this.presentError("Error");
+			}
 		});
 	}
 	
