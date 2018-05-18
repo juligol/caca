@@ -44,6 +44,8 @@ export class Viaje {
 		this.destino = this.viajeActual.destino;
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
+		
+		window.setInterval(this.guardarPosicionActual, 3000);
 	}
   
 	ionViewDidLoad(){
@@ -106,6 +108,26 @@ export class Viaje {
 			//Esperar un cachito mas 
 			setTimeout(() => {this.loader.dismiss();}, 1000);
 		});  
+	}
+	
+	guardarPosicionActual() {
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		/*var myData = JSON.stringify({action: "posicionActual", latitude: latitude, lng: longitude});
+		this.http.post(link, myData).subscribe(data => {
+			var viajes = JSON.parse(data["_body"]);
+			console.log(viajes);
+			if(viajes.length > 0)
+			{
+				this.viajes = viajes;
+				this.viajesAux = viajes;
+				this.inicializarListado(this.viajes);
+			}
+			this.loader.dismiss();
+		}, 
+		error => {
+			console.log("Oooops!");
+			this.loader.dismiss();
+		});*/
 	}
 	
 	finalizarViaje() {

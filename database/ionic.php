@@ -22,10 +22,8 @@
     $postdata = file_get_contents("php://input");
     if (isset($postdata)) {
 		$request = json_decode($postdata);
-        $email = $request->email;
-        $password = $request->password;
         $action = $request->action;
-		if ($email != null && $password != null && $action != null)
+		if ($action != null)
 		{ 
 			//Produccion
 			/*$host = "127.0.0.1:3306";
@@ -41,14 +39,18 @@
 			//Me conecto a la bd
 			$conexion = mysql_connect($host, $user, $pass) or die ("No se conectó a la base de datos");
 			mysql_select_db($db, $conexion) or die ("No se encontró la base de datos.");
+			mysql_query("SET NAMES 'utf8'");
+			mb_http_output('UTF-8');
+			header( 'Content-Type: text/html; charset=utf-8');
+			ini_set("display_errors", 0);
 			
 			switch ($action) {
 				case 'login':
-					$res = login($email, $password, $conexion);
+					$res = login($request, $conexion);
 					echo json_encode($res);
 					break;
 				case 'viajes':
-					$res = viajes($email, $password, $conexion);
+					$res = viajes($request, $conexion);
 					echo json_encode($res);
 					break;
 				default:
@@ -67,20 +69,57 @@
         echo "Error no hay POST";
     }
 	
-	function login($email, $password, $conexion)
+	function login($request, $conexion)
 	{
-		$query = "SELECT * FROM mab_usuarios WHERE usuario = '$email' AND password='" . mysql_real_escape_string($password) . "'";
+		$email = $request->email;
+        $password = $request->password;
+        $resultado = "";
+		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'CHOFER' AND estado = 'ACTIVO' AND usuario = '$email' AND password = '" . mysql_real_escape_string($password) . "'";
 		$result = mysql_query($query, $conexion);
 		return mysql_fetch_array($result);
 	}
 	
-	function viajes($email, $password, $conexion)
+	function viajes($request, $conexion)
 	{
-		$query = "SELECT * FROM mab_viajes where mab_viajes.empresa = '38' ORDER BY mab_viajes.hora DESC";
-		$result = mysql_query($query, $conexion);
 		$viajes = [];
-		while($registro = mysql_fetch_array($result)){
-			array_push($viajes, $registro);
+		$chofer_id = $request->chofer_id;
+		$query = "SELECT * FROM mab_viajes where id_chofer = $chofer_id ORDER BY fecha DESC, hora DESC";
+		$result = mysql_query($query, $conexion);
+		while($viaje = mysql_fetch_array($result)){
+			//Responsable del viaje
+			$sqlResponsable = "SELECT * FROM mab_usuarios WHERE id = " . $viaje["responsable"];
+            $responsable = mysql_fetch_array(mysql_query($sqlResponsable, $conexion));
+			$viaje["responsable"] = $responsable;
+			//Empresa del viaje
+			$sqlEmpresa = "SELECT * FROM mab_empresas WHERE id = " . $viaje["empresa"];
+            $empresa = mysql_fetch_array(mysql_query($sqlEmpresa, $conexion));
+			$viaje["empresa"] = $empresa;
+			//Centro de costo 1
+			$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc1"];
+            $cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
+			$viaje["cc1"] = $cc;
+			//Centro de costo 2
+			if ($viaje["id_cc2"] <> 0)
+			{
+				$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc2"];
+	            $cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
+				$viaje["cc2"] = $cc;
+			}
+			//Centro de costo 3
+			if ($viaje["id_cc3"] <> 0)
+			{
+				$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc3"];
+	            $cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
+				$viaje["cc3"] = $cc;
+			}
+			//Centro de costo 4
+			if ($viaje["id_cc4"] <> 0)
+			{
+				$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc4"];
+	            $cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
+				$viaje["cc4"] = $cc;
+			}
+			array_push($viajes, $viaje);
 		}
 		return $viajes;
 	}

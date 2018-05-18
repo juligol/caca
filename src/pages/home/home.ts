@@ -15,7 +15,7 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy';
   templateUrl: 'home.html'
 })
 
-export class Home {
+export class Home{
 	viajes = [];
 	viajesAux = [];
 	busqueda: string = '';
@@ -23,6 +23,8 @@ export class Home {
 	contador: any;
 	selectOptions: any;
 	loader: any;
+	user: any;
+	private timer;
 
 	constructor(public loadingCtrl: LoadingController, 
 				public alertCtrl: AlertController, 
@@ -51,67 +53,81 @@ export class Home {
 		  title: 'Viaje'
 		};
 		
-		this.http = http;		
+		this.http = http;
 	}
-  
+		
 	cargarViajes(){
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
-		var myData = JSON.stringify({email: "a", password: "s", action: "viajes"});
-		this.http.post(link, myData).subscribe(data => {
-			var viajes = JSON.parse(data["_body"]);
-			if(viajes.length > 0)
-			{
-				this.viajes = viajes;
-				this.inicializarListado();
-				//console.log(this.items);
-			}
-			this.loader.dismiss();
-		}, 
-		error => {
-			console.log("Oooops!");
-			this.loader.dismiss();
+		this.storage.get('user').then((user) => {
+			var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+			var myData = JSON.stringify({action: "viajes", chofer_id: user.id});
+			this.http.post(link, myData).subscribe(data => {
+				var viajes = JSON.parse(data["_body"]);
+				console.log(viajes);
+				if(viajes.length > 0)
+				{
+					this.viajes = viajes;
+					this.viajesAux = viajes;
+					this.inicializarListado(this.viajes);
+				}
+				this.loader.dismiss();
+			}, 
+			error => {
+				console.log("Oooops!");
+				this.loader.dismiss();
+			});
 		});
 	}
 	
-	inicializarListado(){
-		this.contador = 15;
+	inicializarListado(viajes){
+		if(viajes.length < 10){
+			this.contador = viajes.length;
+		}else{
+			this.contador = 10;
+		}
 		this.items = [];
 		for (var i = 0; i < this.contador; i++) {
-			this.items.push(this.viajes[i]);
+			this.items.push(viajes[i]);
 		}
 	}
 	
 	doInfinite(infiniteScroll) {
 		console.log('Sincronizando mas viajes');
 		setTimeout(() => {
-			for (let i = this.contador; i < this.contador + 5; i++) {
-				this.items.push( this.viajes[i] );
+			var cantidadAdicional;
+			var losQueQuedan = this.viajesAux.length - this.contador;
+			if(losQueQuedan < 5){
+				cantidadAdicional = losQueQuedan;
+			}else{
+				cantidadAdicional = 5;
 			}
-			this.contador += 5;
+			for (let i = this.contador; i < this.contador + cantidadAdicional; i++) {
+				this.items.push( this.viajesAux[i] );
+			}
+			this.contador += cantidadAdicional;
 			console.log('Fin de la sincro');
 			infiniteScroll.complete();
 		}, 500);
 	}
 	
 	getItems(ev: any) {
-		this.inicializarListado();
+		this.inicializarListado(this.viajesAux);
 		// set val to the value of the searchbar
 		this.busqueda = ev.target.value;
 		// if the value is an empty string don't filter the items
 		if (this.busqueda && this.busqueda.trim() != '') {
-			this.items = this.items.filter((item) => {
-				return (item.origen && item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
-			})
+			this.viajesAux = this.viajes.filter((item) => {
+				return (item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
+			});
+			this.inicializarListado(this.viajesAux);
+		}else{
+			this.inicializarListado(this.viajes);
 		}
 	}
 	
 	verViaje(event, item) {
-		var origen = item.origen.split(",")[0];
-		var destino = item.destino.split(",")[0];
-		var lista = "<ul><li>" + origen + "</li><li>" + destino + "</li><li>" + item.proveedor + "</li></ul>"
 		let alert = this.alertCtrl.create({
 			title: 'Viaje ' + item.id,
-			message: lista,
+			message: this.lista(item),
 			buttons: [
 			  {
 				text: 'Cancel',
@@ -126,6 +142,38 @@ export class Home {
 			cssClass: 'verViajeCss'
 		});
 		alert.present();
+	}
+	
+	lista(item){
+		var origen = item.origen.split(",")[0];
+		var destino = item.destino.split(",")[0];
+		var pasajeros = "";
+		if(item.pasajero2.trim() != ""){
+			pasajeros += "<li>Pasajero 2: <b>" + item.pasajero2.trim() + "</b></li>" +
+						 "<li>Centro de costo 2: <b>" + item.cc2.descripcion + "</b></li>";
+		}
+		if(item.pasajero3.trim() != ""){
+			pasajeros += "<li>Pasajero 3: <b>" + item.pasajero3.trim() + "</b></li>" +
+						 "<li>Centro de costo 3: <b>" + item.cc3.descripcion + "</b></li>";
+		}
+		if(item.pasajero4.trim() != ""){
+			pasajeros += "<li>Pasajero 4: <b>" + item.pasajero4.trim() + "</b></li>" +
+						 "<li>Centro de costo 4: <b>" + item.cc4.descripcion + "</b></li>";
+		}
+		var lista = "<ul>" +
+						"<li>Pedido por: <b>" + item.responsable.nombre + "</b></li>" +
+						"<li>Empresa: <b>" + item.empresa.nombre + "</b></li>" +
+						"<li>Proveedor: <b>" + item.proveedor + "</b></li>" +
+						"<li>Fecha: <b>" + item.fecha + "</b></li>" +
+						"<li>Hora: <b>" + item.hora + "</b></li>" +
+						"<li>Desde: <b>" + origen + "</b></li>" +
+						"<li>Hasta: <b>" + destino + "</b></li>" +
+						"<li>Pasajero 1: <b>" + item.pasajero1.trim() + "</b></li>" +
+						"<li>Centro de costo 1: <b>" + item.cc1.descripcion + "</b></li>" +
+						pasajeros +
+						"<li>Observaciones: <b>" + item.observaciones + "</b></li>" +
+					"</ul>";
+		return lista;
 	}
 	
 	comenzar(event, item) {
