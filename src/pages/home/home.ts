@@ -24,7 +24,6 @@ export class Home{
 	selectOptions: any;
 	loader: any;
 	user: any;
-	private timer;
 
 	constructor(public loadingCtrl: LoadingController, 
 				public alertCtrl: AlertController, 
@@ -62,7 +61,7 @@ export class Home{
 			var myData = JSON.stringify({action: "viajes", chofer_id: user.id});
 			this.http.post(link, myData).subscribe(data => {
 				var viajes = JSON.parse(data["_body"]);
-				console.log(viajes);
+				//console.log(viajes);
 				if(viajes.length > 0)
 				{
 					this.viajes = viajes;

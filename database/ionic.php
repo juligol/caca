@@ -53,6 +53,10 @@
 					$res = viajes($request, $conexion);
 					echo json_encode($res);
 					break;
+				case 'posicionActual':
+					$res = posicionActual($request, $conexion);
+					echo $res;
+					break;
 				default:
 					break;
 			}
@@ -73,7 +77,6 @@
 	{
 		$email = $request->email;
         $password = $request->password;
-        $resultado = "";
 		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'CHOFER' AND estado = 'ACTIVO' AND usuario = '$email' AND password = '" . mysql_real_escape_string($password) . "'";
 		$result = mysql_query($query, $conexion);
 		return mysql_fetch_array($result);
@@ -122,5 +125,15 @@
 			array_push($viajes, $viaje);
 		}
 		return $viajes;
+	}
+	
+	function posicionActual($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$latitud = $request->latitud;
+        $longitud = $request->longitud;
+		$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud) VALUES ('$viaje_id', '$latitud', '$longitud')";
+		$result = mysql_query($query, $conexion);
+		return "exito";
 	}
 ?>

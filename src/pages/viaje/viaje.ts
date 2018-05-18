@@ -5,6 +5,7 @@ import { Storage } from '@ionic/storage';
 import { AlertController } from 'ionic-angular';
 import { Home } from '../home/home';
 import { LoadingController } from 'ionic-angular';
+import { Http } from '@angular/http';
 
 declare var google;
 
@@ -22,21 +23,20 @@ export class Viaje {
 	origen: any;
 	destino: any;
 	loader: any;
+	http: Http;
 
 	constructor(public navCtrl: NavController, 
 			    public navParams: NavParams,
 			    private geolocation: Geolocation,
 			    private storage: Storage,
 				public alertCtrl: AlertController,
-				public loadingCtrl: LoadingController) {
+				public loadingCtrl: LoadingController,
+				public http1: Http) {
 					
 		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
 		});
-		this.loader.present();		
-		this.storage.get('user').then((val) => {
-			console.log('Hola ' + val.nombre);
-		});
+		this.loader.present();
 				  
 		// If we navigated to this page, we will have an item available as a nav param
 		this.viajeActual = navParams.get('item');
@@ -44,8 +44,8 @@ export class Viaje {
 		this.destino = this.viajeActual.destino;
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
-		
-		window.setInterval(this.guardarPosicionActual, 3000);
+		this.http = http1;
+		window.setInterval(this.guardarPosicionActual.bind(null, this.http, this.viajeActual.id), 60000);
 	}
   
 	ionViewDidLoad(){
@@ -57,7 +57,14 @@ export class Viaje {
 			this.loadMap(response);
 		}).catch(error =>{
 			console.log(error);
-		})
+		});
+		
+		/*this.geolocation.watchPosition().subscribe(response => {
+			this.loadMap(response);
+		}, 
+		(error) => {
+		  console.log(error);
+		});*/
 	}
   
 	loadMap(position: Geoposition){
@@ -100,7 +107,7 @@ export class Viaje {
 			avoidTolls: true
 		}, (response, status)=> {
 			if(status === google.maps.DirectionsStatus.OK) {
-				console.log(response);
+				//console.log(response);
 				this.directionsDisplay.setDirections(response);
 			}else{
 				alert('No se pudieron cargar las direcciones debido a: ' + status);
@@ -110,24 +117,23 @@ export class Viaje {
 		});  
 	}
 	
-	guardarPosicionActual() {
+	guardarPosicionActual(http, viaje_id) {
 		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
-		/*var myData = JSON.stringify({action: "posicionActual", latitude: latitude, lng: longitude});
-		this.http.post(link, myData).subscribe(data => {
-			var viajes = JSON.parse(data["_body"]);
-			console.log(viajes);
-			if(viajes.length > 0)
-			{
-				this.viajes = viajes;
-				this.viajesAux = viajes;
-				this.inicializarListado(this.viajes);
-			}
-			this.loader.dismiss();
-		}, 
-		error => {
-			console.log("Oooops!");
-			this.loader.dismiss();
-		});*/
+		var options = {enableHighAccuracy: true};
+		navigator.geolocation.getCurrentPosition(function (position) {
+			let latitude = position.coords.latitude;
+			let longitude = position.coords.longitude;
+			console.log(latitude, longitude);
+			var myData = JSON.stringify({action: "posicionActual", viaje_id: viaje_id, latitud: latitude, longitud: longitude});
+			http.post(link, myData).subscribe(data => {
+				console.log(data["_body"]);
+			}, 
+			error => {
+				console.log("Oooops!");
+			});
+		}, function (error) {
+			console.log(error);
+		}, options);
 	}
 	
 	finalizarViaje() {
