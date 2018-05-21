@@ -57,6 +57,10 @@
 					$res = posicionActual($request, $conexion);
 					echo $res;
 					break;
+				case 'distanciaTotal':
+					$res = distanciaTotal($request, $conexion);
+					echo $res;
+					break;
 				default:
 					break;
 			}
@@ -132,8 +136,20 @@
 		$viaje_id = $request->viaje_id;
 		$latitud = $request->latitud;
         $longitud = $request->longitud;
-		$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud) VALUES ('$viaje_id', '$latitud', '$longitud')";
+        $distancia = $request->distancia;
+		$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitud', '$distancia', NOW())";
 		$result = mysql_query($query, $conexion);
 		return "exito";
+	}
+	
+	function distanciaTotal($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$query = "SELECT SUM(distancia) as distancia FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+		$result = mysql_fetch_array(mysql_query($query, $conexion));
+		$distancia = $result["distancia"];
+		$query = "UPDATE mab_viajes SET distancia_total_recorrida = '$distancia' WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return $distancia;
 	}
 ?>

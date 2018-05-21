@@ -176,8 +176,8 @@ export class Home{
 	}
 	
 	comenzar(event, item) {
-		//this.verificarGPS(event, item);
-		this.navCtrl.push(Viaje, { item: item });
+		this.verificarGPS(event, item);
+		//this.navCtrl.push(Viaje, { item: item });
 	}
 	
 	verItem(event, item) {
@@ -192,20 +192,28 @@ export class Home{
 		});
 		this.loader.present();
 		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
-			this.loader.dismiss();
 			if(canRequest) {
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.navCtrl.push(Viaje, { item: item }),
-					error => console.log("Debe activar la ubicación")
+					() => this.irAlViaje(item),
+					error => this.presentError("request true")
 				);
 			}else{
-				this.presentError("Error");
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.irAlViaje(item),
+					error => this.presentError("request false")
+				);
 			}
 		});
 	}
 	
+	irAlViaje(item){
+		this.loader.dismiss();
+		this.navCtrl.push(Viaje, { item: item });
+	}
+	
 	presentError(mensaje) {
+		this.loader.dismiss();
 		let alert = this.alertCtrl.create({
 			title: 'GPS',
 			subTitle: mensaje,

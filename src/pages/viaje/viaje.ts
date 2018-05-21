@@ -24,6 +24,8 @@ export class Viaje {
 	destino: any;
 	loader: any;
 	http: Http;
+	marker: any;
+	interval: any;
 
 	constructor(public navCtrl: NavController, 
 			    public navParams: NavParams,
@@ -45,7 +47,9 @@ export class Viaje {
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
 		this.http = http1;
-		window.setInterval(this.guardarPosicionActual.bind(null, this.http, this.viajeActual.id), 60000);
+		this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
+		//2 minutos
+		//window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
 	}
   
 	ionViewDidLoad(){
@@ -54,7 +58,7 @@ export class Viaje {
   
 	getPosition():any{
 		this.geolocation.getCurrentPosition().then(response => {
-			this.loadMap(response);
+			this.loadMap(response, true);
 		}).catch(error =>{
 			console.log(error);
 		});
@@ -67,39 +71,43 @@ export class Viaje {
 		});*/
 	}
   
-	loadMap(position: Geoposition){
+	loadMap(position: Geoposition, estoyIniciando){
 		let latitude = position.coords.latitude;
 		let longitude = position.coords.longitude;
-		console.log(latitude, longitude);
 		
 		// create a new map by passing HTMLElement
 		let mapEle: HTMLElement = document.getElementById('map');
 		let panelEle: HTMLElement = document.getElementById('panel');
 
-		// create LatLng object
+		// New location
 		this.myLatLng = {lat: latitude, lng: longitude};
 
-		// create map
-		this.map = new google.maps.Map(mapEle, {
-		  center: this.myLatLng,
-		  zoom: 12
-		});
-		
-		this.directionsDisplay.setMap(this.map);
-		this.directionsDisplay.setPanel(panelEle);
+		if(estoyIniciando){
+			// create map
+			this.map = new google.maps.Map(mapEle, {
+			  center: this.myLatLng,
+			  zoom: 12
+			});
+			this.directionsDisplay.setMap(this.map);
+			this.directionsDisplay.setPanel(panelEle);
+		}
 		
 		google.maps.event.addListenerOnce(this.map, 'idle', () => {
-		  let marker = new google.maps.Marker({
-			position: this.myLatLng,
-			map: this.map,
-			title: 'Hello World!'
-		  });
-		  mapEle.classList.add('show-map');
-		  this.calculateRoute();
+			if(estoyIniciando){
+				this.marker = new google.maps.Marker({
+					position: this.myLatLng,
+					map: this.map,
+					title: 'Hello World!'
+				});
+				mapEle.classList.add('show-map');
+				this.calcularRuta();
+			}else{
+				this.marker.setPosition(this.myLatLng);
+			}
 		});
 	}
 
-	private calculateRoute(){
+	private calcularRuta(){
 		this.directionsService.route({
 			origin: this.myLatLng,
 			destination: this.destino,
@@ -117,15 +125,22 @@ export class Viaje {
 		});  
 	}
 	
-	guardarPosicionActual(http, viaje_id) {
+	guardarPosicionActual(estaClase) {
 		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var options = {enableHighAccuracy: true};
 		navigator.geolocation.getCurrentPosition(function (position) {
-			let latitude = position.coords.latitude;
-			let longitude = position.coords.longitude;
-			console.log(latitude, longitude);
-			var myData = JSON.stringify({action: "posicionActual", viaje_id: viaje_id, latitud: latitude, longitud: longitude});
-			http.post(link, myData).subscribe(data => {
+			let latitud = position.coords.latitude;
+			let longitud = position.coords.longitude;
+			let miPosicionActual = {lat: latitud, lng: longitud};
+			//Posicion vieja
+			console.log(estaClase.myLatLng);
+			//Posicion nueva
+			console.log(miPosicionActual);
+			let distancia = estaClase.calcularDistanciaEntre(estaClase.myLatLng.lat, miPosicionActual.lat, estaClase.myLatLng.lng, miPosicionActual.lng);
+			console.log(distancia);
+			estaClase.loadMap(position, false);
+			var myData = JSON.stringify({action: "posicionActual", viaje_id: estaClase.viajeActual.id, latitud: latitud, longitud: longitud, distancia: distancia});
+			estaClase.http.post(link, myData).subscribe(data => {
 				console.log(data["_body"]);
 			}, 
 			error => {
@@ -134,6 +149,14 @@ export class Viaje {
 		}, function (error) {
 			console.log(error);
 		}, options);
+	}
+	
+	calcularDistanciaEntre(lat1:number, lat2:number, long1:number, long2:number){
+		let p = 0.017453292519943295;    // Math.PI / 180
+		let c = Math.cos;
+		let a = 0.5 - c((lat1-lat2) * p) / 2 + c(lat2 * p) *c((lat1) * p) * (1 - c(((long1- long2) * p))) / 2;
+		let dis = (12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
+		return dis;
 	}
 	
 	finalizarViaje() {
@@ -160,7 +183,25 @@ export class Viaje {
 	}
 	
 	cerrarViaje() {
-		this.navCtrl.setRoot(Home);
-		//Hacer los calculos
+		window.clearInterval(this.interval);
+		this.loader = this.loadingCtrl.create({
+			content: "Por favor espere...",
+		});
+		this.loader.present();
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
+		this.http.post(link, myData).subscribe(data => {
+			var distancia = parseFloat(data["_body"]);
+			console.log(distancia);
+			if(distancia > 0)
+			{
+				this.navCtrl.setRoot(Home);
+			}
+			this.loader.dismiss();
+		}, 
+		error => {
+			console.log("Oooops!");
+			this.loader.dismiss();
+		});
 	}
 }
