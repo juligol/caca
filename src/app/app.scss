@@ -15,41 +15,6 @@
 // for the .md, .ios, or .wp mode classes. The mode class is
 // automatically applied to the <body> element in the app.
 
-.verViajeCss {
-
-	
-	h2 {
-		text-align: center;
-	}
-	
-	.alert-wrapper{
-		width: 50%;
-		height: 100%;
-		max-width: 100%;
-	}
-	.alert-message {
-		max-height: 100%;
-		height: 78%;
-	}
-	ul {
-		list-style-type: none;
-		margin: 0;
-		padding: 0;
-	}
-	 
-	li {
-		color: black;
-		padding: 1%;
-		font: 200 14px/1.5 Helvetica, Verdana, sans-serif;
-		border-bottom: 1px solid #ccc;
-		/*text-align: center;*/
-	}
-	 
-	li:last-child {
-		border: none;
-	}
-}
-
 .adp-placemark {
 	td, th {
 		padding: 3px;

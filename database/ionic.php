@@ -90,7 +90,7 @@
 	{
 		$viajes = [];
 		$chofer_id = $request->chofer_id;
-		$query = "SELECT * FROM mab_viajes where id_chofer = $chofer_id ORDER BY fecha DESC, hora DESC";
+		$query = "SELECT * FROM mab_viajes where id_chofer = $chofer_id AND status in (1, 2, 3, 5, 6, 7, 8, 11) ORDER BY fecha DESC, hora DESC";
 		$result = mysql_query($query, $conexion);
 		while($viaje = mysql_fetch_array($result)){
 			//Responsable del viaje

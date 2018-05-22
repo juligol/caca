@@ -5,7 +5,8 @@
     </button>
 	<ion-title>Viaje {{viajeActual.id}}</ion-title>
 	<ion-buttons end>
-		<button ion-button color="danger" (click)="finalizarViaje()">Finalizar</button>
+		<button *ngIf="!viajeIniciado && viajeActual.status == 1" ion-button color="secondary" (click)="comenzarViaje()">Comenzar</button>
+		<button *ngIf="viajeIniciado && viajeActual.status == 1" ion-button color="danger" (click)="finalizarViaje()">Finalizar</button>
     </ion-buttons>
   </ion-navbar>
 </ion-header>

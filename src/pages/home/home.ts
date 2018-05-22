@@ -24,6 +24,7 @@ export class Home{
 	selectOptions: any;
 	loader: any;
 	user: any;
+	shownGroup = null;
 
 	constructor(public loadingCtrl: LoadingController, 
 				public alertCtrl: AlertController, 
@@ -47,11 +48,6 @@ export class Home{
 		});
 		this.loader.present();
 		this.cargarViajes();
-		
-		this.selectOptions = {
-		  title: 'Viaje'
-		};
-		
 		this.http = http;
 	}
 		
@@ -65,7 +61,6 @@ export class Home{
 				if(viajes.length > 0)
 				{
 					this.viajes = viajes;
-					this.viajesAux = viajes;
 					this.inicializarListado(this.viajes);
 				}
 				this.loader.dismiss();
@@ -78,6 +73,7 @@ export class Home{
 	}
 	
 	inicializarListado(viajes){
+		this.viajesAux = viajes;
 		if(viajes.length < 10){
 			this.contador = viajes.length;
 		}else{
@@ -108,8 +104,8 @@ export class Home{
 		}, 500);
 	}
 	
-	getItems(ev: any) {
-		this.inicializarListado(this.viajesAux);
+	buscarItems(ev: any) {
+		this.inicializarListado(this.viajes);
 		// set val to the value of the searchbar
 		this.busqueda = ev.target.value;
 		// if the value is an empty string don't filter the items
@@ -118,72 +114,24 @@ export class Home{
 				return (item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
 			});
 			this.inicializarListado(this.viajesAux);
-		}else{
-			this.inicializarListado(this.viajes);
 		}
 	}
 	
-	verViaje(event, item) {
-		let alert = this.alertCtrl.create({
-			title: 'Viaje ' + item.id,
-			message: this.lista(item),
-			buttons: [
-			  {
-				text: 'Cancel',
-				role: 'cancel',
-				handler: () => {console.log('Cancel clicked');}
-			  },
-			  {
-				text: 'Comenzar',
-				handler: () => {this.comenzar(event, item);}
-			  }
-			],
-			cssClass: 'verViajeCss'
-		});
-		alert.present();
+	verSubmenu(group) {
+		if (this.isGroupShown(group)) {
+			this.shownGroup = null;
+		} else {
+			this.shownGroup = group;
+		}
 	}
 	
-	lista(item){
-		var origen = item.origen.split(",")[0];
-		var destino = item.destino.split(",")[0];
-		var pasajeros = "";
-		if(item.pasajero2.trim() != ""){
-			pasajeros += "<li>Pasajero 2: <b>" + item.pasajero2.trim() + "</b></li>" +
-						 "<li>Centro de costo 2: <b>" + item.cc2.descripcion + "</b></li>";
-		}
-		if(item.pasajero3.trim() != ""){
-			pasajeros += "<li>Pasajero 3: <b>" + item.pasajero3.trim() + "</b></li>" +
-						 "<li>Centro de costo 3: <b>" + item.cc3.descripcion + "</b></li>";
-		}
-		if(item.pasajero4.trim() != ""){
-			pasajeros += "<li>Pasajero 4: <b>" + item.pasajero4.trim() + "</b></li>" +
-						 "<li>Centro de costo 4: <b>" + item.cc4.descripcion + "</b></li>";
-		}
-		var lista = "<ul>" +
-						"<li>Pedido por: <b>" + item.responsable.nombre + "</b></li>" +
-						"<li>Empresa: <b>" + item.empresa.nombre + "</b></li>" +
-						"<li>Proveedor: <b>" + item.proveedor + "</b></li>" +
-						"<li>Fecha: <b>" + item.fecha + "</b></li>" +
-						"<li>Hora: <b>" + item.hora + "</b></li>" +
-						"<li>Desde: <b>" + origen + "</b></li>" +
-						"<li>Hasta: <b>" + destino + "</b></li>" +
-						"<li>Pasajero 1: <b>" + item.pasajero1.trim() + "</b></li>" +
-						"<li>Centro de costo 1: <b>" + item.cc1.descripcion + "</b></li>" +
-						pasajeros +
-						"<li>Observaciones: <b>" + item.observaciones + "</b></li>" +
-					"</ul>";
-		return lista;
+	isGroupShown(group) {
+		return this.shownGroup === group;
 	}
 	
-	comenzar(event, item) {
-		this.verificarGPS(event, item);
-		//this.navCtrl.push(Viaje, { item: item });
-	}
-	
-	verItem(event, item) {
-		this.navCtrl.push(DetalleViaje, {
-		  item: item
-		});
+	verRecorrido(event, item) {
+		//this.verificarGPS(event, item);
+		this.navCtrl.push(Viaje, { item: item });
 	}
 	
 	verificarGPS(event, item){
@@ -196,12 +144,12 @@ export class Home{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.presentError("request true")
+					error => this.presentError("Error desde el request true")
 				);
 			}else{
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.presentError("request false")
+					error => this.presentError("Error desde el request false")
 				);
 			}
 		});
@@ -214,11 +162,13 @@ export class Home{
 	
 	presentError(mensaje) {
 		this.loader.dismiss();
-		let alert = this.alertCtrl.create({
+		console.log(mensaje);
+		//this.navCtrl.setRoot(this);
+		/*let alert = this.alertCtrl.create({
 			title: 'GPS',
 			subTitle: mensaje,
 			buttons: ['Cerrar']
 		});
-		alert.present();
+		alert.present();*/
 	}
 }

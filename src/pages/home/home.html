@@ -8,13 +8,37 @@
 </ion-header>
 
 <ion-content padding>
-	<ion-searchbar (ionInput)="getItems($event)" placeholder="Buscar" ></ion-searchbar>
+	<ion-searchbar (ionInput)="buscarItems($event)" placeholder="Buscar" ></ion-searchbar>
 	<ion-list>
-	  <ion-item *ngFor="let item of items" (click)="verViaje($event, item)">
+		<ion-item *ngFor="let item of items; let i=index" text-wrap (click)="verSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
 		{{ item.origen }}
+			<ion-item-group submenu *ngIf="isGroupShown(i)">
+				<ion-item submenu-item>ID: <b>{{ item.id }}</b></ion-item>
+				<ion-item submenu-item>Pedido por: <b>{{ item.responsable.nombre }}</b></ion-item>
+				<ion-item submenu-item>Empresa: <b>{{ item.empresa.nombre }}</b></ion-item>
+				<ion-item submenu-item>Proveedor: <b>{{ item.proveedor }}</b></ion-item>
+				<ion-item submenu-item>Fecha: <b>{{ item.fecha }}</b></ion-item>
+				<ion-item submenu-item>Hora: <b>{{ item.hora }}</b></ion-item>
+				<ion-item submenu-item>Origen: <b>{{ item.origen }}</b></ion-item>
+				<ion-item submenu-item>Destino: <b>{{ item.destino }}</b></ion-item>
+				<ion-item submenu-item>Pasajero 1: <b>{{ item.pasajero1.trim() }}</b></ion-item>
+				<ion-item submenu-item>Centro de costo 1: <b>{{ item.cc1.descripcion }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero2.trim() != ''">Pasajero 2: <b>{{ item.pasajero2.trim() }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero2.trim() != ''">Centro de costo 2: <b>{{ item.cc2.descripcion }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero3.trim() != ''">Pasajero 3: <b>{{ item.pasajero3.trim() }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero3.trim() != ''">Centro de costo 3: <b>{{ item.cc3.descripcion }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero4.trim() != ''">Pasajero 4: <b>{{ item.pasajero4.trim() }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.pasajero4.trim() != ''">Centro de costo 4: <b>{{ item.cc4.descripcion }}</b></ion-item>
+				<ion-item submenu-item>Observaciones: <b>{{ item.observaciones }}</b></ion-item>
+				<ion-item submenu-item>
+					<ion-buttons end>
+						<button ion-button (click)="verRecorrido($event, item)">Ver recorrido</button>
+					</ion-buttons>
+				</ion-item>
+			</ion-item-group>
 	  </ion-item>
 	</ion-list>
-	<ion-infinite-scroll *ngIf="contador < viajes.length" (ionInfinite)="doInfinite($event)">
+	<ion-infinite-scroll *ngIf="contador < viajesAux.length" (ionInfinite)="doInfinite($event)">
 		<ion-infinite-scroll-content loadingSpinner="bubbles" loadingText="Cargando más viajes..."></ion-infinite-scroll-content>
 	</ion-infinite-scroll>
 </ion-content>

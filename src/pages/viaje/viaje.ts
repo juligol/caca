@@ -26,6 +26,7 @@ export class Viaje {
 	http: Http;
 	marker: any;
 	interval: any;
+	viajeIniciado: Boolean = false;
 
 	constructor(public navCtrl: NavController, 
 			    public navParams: NavParams,
@@ -47,9 +48,6 @@ export class Viaje {
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
 		this.http = http1;
-		this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
-		//2 minutos
-		//window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
 	}
   
 	ionViewDidLoad(){
@@ -90,6 +88,8 @@ export class Viaje {
 			});
 			this.directionsDisplay.setMap(this.map);
 			this.directionsDisplay.setPanel(panelEle);
+		}else{
+			this.directionsDisplay.setMap(this.map);
 		}
 		
 		google.maps.event.addListenerOnce(this.map, 'idle', () => {
@@ -123,6 +123,19 @@ export class Viaje {
 			//Esperar un cachito mas 
 			setTimeout(() => {this.loader.dismiss();}, 1000);
 		});  
+	}
+	
+	comenzarViaje() {
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
+		this.http.post(link, myData).subscribe(data => {
+			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 300000);
+			//2 minutos son 120000 ms;
+			this.viajeIniciado = true;
+		}, 
+		error => {
+			console.log("Oooops!");
+		});
 	}
 	
 	guardarPosicionActual(estaClase) {
