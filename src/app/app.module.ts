@@ -19,6 +19,7 @@ import { Login } from '../pages/login/login';
 import { Register } from '../pages/register/register';
 import { Logout } from '../pages/logout/logout';
 import { Viaje } from '../pages/viaje/viaje';
+import { GlobalProvider } from '../providers/global/global';
 
 @NgModule({
   declarations: [
@@ -56,7 +57,8 @@ import { Viaje } from '../pages/viaje/viaje';
 	Geolocation,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
 	Diagnostic,
-	LocationAccuracy
+	LocationAccuracy,
+    GlobalProvider
   ]
 })
 

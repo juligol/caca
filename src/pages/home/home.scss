@@ -6,5 +6,33 @@ page-home {
 				width: 33.33333333%;
 			}
 		}
+		ion-item-group[submenu] {
+			.label-md {
+				margin: 0;
+				line-height: 1;
+			}
+		}
+		
+		.ion-md-checkmark-circle, ion-ios-checkmark-circle {
+			color: #2ec95c !important;
+			label {
+				color: #000  !important;
+			}
+		}
+		
+		.ion-md-car, ion-ios-car {
+			color: #488aff  !important;
+			label {
+				color: #000  !important;
+			}
+		}
+		
+		.ion-md-close-circle, ion-ios-close-circle {
+			color: #e13838 !important;
+		}
+		
+		.ion-md-home, ion-ios-home {
+			color: #e13838 !important;
+		}
 	}
 }

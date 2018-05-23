@@ -6,6 +6,7 @@ import { AlertController } from 'ionic-angular';
 import { Home } from '../home/home';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
+import { GlobalProvider } from "../../providers/global/global";
 
 declare var google;
 
@@ -20,12 +21,13 @@ export class Viaje {
 	directionsService: any = null;
 	directionsDisplay: any = null;
 	myLatLng: any;
-	origen: any;
 	destino: any;
 	loader: any;
 	http: Http;
 	marker: any;
 	interval: any;
+	link: any;
+	callback: any;
 	viajeIniciado: Boolean = false;
 
 	constructor(public navCtrl: NavController, 
@@ -34,20 +36,29 @@ export class Viaje {
 			    private storage: Storage,
 				public alertCtrl: AlertController,
 				public loadingCtrl: LoadingController,
-				public http1: Http) {
+				public http1: Http,
+				public global: GlobalProvider) {
 					
 		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
 		});
 		this.loader.present();
-				  
-		// If we navigated to this page, we will have an item available as a nav param
+		this.link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		this.viajeActual = navParams.get('item');
-		this.origen = this.viajeActual.origen;
-		this.destino = this.viajeActual.destino;
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
 		this.http = http1;
+		
+		if(this.viajeActual.en_proceso == 1)
+			this.viajeIniciado = true;
+	}
+	
+	ionViewWillEnter() {
+      this.callback = this.navParams.get("callback")
+	}
+	
+	ionViewWillLeave() {
+		this.callback({viaje: this.viajeActual});
 	}
   
 	ionViewDidLoad(){
@@ -110,7 +121,7 @@ export class Viaje {
 	private calcularRuta(){
 		this.directionsService.route({
 			origin: this.myLatLng,
-			destination: this.destino,
+			destination: this.viajeActual.destino,
 			travelMode: google.maps.TravelMode.DRIVING,
 			avoidTolls: true
 		}, (response, status)=> {
@@ -129,8 +140,10 @@ export class Viaje {
 		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
 		this.http.post(link, myData).subscribe(data => {
-			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 300000);
-			//2 minutos son 120000 ms;
+			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 2000);
+			//5 minutos son 300000 ms;
+			this.global.intervalos[this.viajeActual.id] = this.interval;
+			this.viajeActual.en_proceso = 1;
 			this.viajeIniciado = true;
 		}, 
 		error => {
@@ -150,7 +163,7 @@ export class Viaje {
 			//Posicion nueva
 			console.log(miPosicionActual);
 			let distancia = estaClase.calcularDistanciaEntre(estaClase.myLatLng.lat, miPosicionActual.lat, estaClase.myLatLng.lng, miPosicionActual.lng);
-			console.log(distancia);
+			//console.log(distancia);
 			estaClase.loadMap(position, false);
 			var myData = JSON.stringify({action: "posicionActual", viaje_id: estaClase.viajeActual.id, latitud: latitud, longitud: longitud, distancia: distancia});
 			estaClase.http.post(link, myData).subscribe(data => {
@@ -196,7 +209,8 @@ export class Viaje {
 	}
 	
 	cerrarViaje() {
-		window.clearInterval(this.interval);
+		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
+		this.global.intervalos[this.viajeActual.id] = null;
 		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
 		});

@@ -25,6 +25,7 @@ export class Home{
 	loader: any;
 	user: any;
 	shownGroup = null;
+	myCallbackFunction: any;
 
 	constructor(public loadingCtrl: LoadingController, 
 				public alertCtrl: AlertController, 
@@ -49,6 +50,20 @@ export class Home{
 		this.loader.present();
 		this.cargarViajes();
 		this.http = http;
+		
+		this.myCallbackFunction = (parametros) => {
+			return new Promise((resolve, reject) => {
+				var viaje_id = parametros.viaje.id;
+				this.viajes = this.viajes.map((item) => {
+					if(item.id == viaje_id)
+						return parametros.viaje;
+					else
+						return item;
+				});
+				this.inicializarListado(this.viajes);
+				resolve();
+			});
+		}
 	}
 		
 	cargarViajes(){
@@ -131,7 +146,7 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		//this.verificarGPS(event, item);
-		this.navCtrl.push(Viaje, { item: item });
+		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction});
 	}
 	
 	verificarGPS(event, item){
