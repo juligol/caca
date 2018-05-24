@@ -13,25 +13,21 @@ page-home {
 			}
 		}
 		
-		.ion-md-checkmark-circle, ion-ios-checkmark-circle {
-			color: #2ec95c !important;
+		.item-icon{
 			label {
 				color: #000  !important;
 			}
+		}
+		
+		.ion-md-checkmark-circle, ion-ios-checkmark-circle {
+			color: #2ec95c !important;
 		}
 		
 		.ion-md-car, ion-ios-car {
 			color: #488aff  !important;
-			label {
-				color: #000  !important;
-			}
 		}
 		
-		.ion-md-close-circle, ion-ios-close-circle {
-			color: #e13838 !important;
-		}
-		
-		.ion-md-home, ion-ios-home {
+		.ion-md-unlock, ion-ios-unlock {
 			color: #e13838 !important;
 		}
 	}

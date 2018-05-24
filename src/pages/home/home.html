@@ -9,13 +9,15 @@
 </ion-header>
 
 <ion-content padding>
-	<h2 text-center>Listado de viajes</h2>
+	<!--h2 text-center>Listado de viajes</h2-->
+	<ion-refresher (ionRefresh)="actualizarListado($event)">
+		<ion-refresher-content pullingIcon="arrow-dropdown" pullingText="Arrastrar para actualizar" refreshingSpinner="circles" refreshingText="Actualizando..."></ion-refresher-content>
+	</ion-refresher>
 	<ion-list>
 		<ion-item *ngFor="let item of items; let i=index" (click)="verSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" ios="ios-checkmark-circle" md="md-checkmark-circle"><label> - </label></ion-icon>
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0" ios="ios-car" md="md-car"><label> - </label></ion-icon>
-			<!--ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" ios="ios-home" md="md-home"></ion-icon>
-			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" ios="ios-close-circle" md="md-close-circle"></ion-icon-->
+			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" ios="ios-unlock" md="md-unlock"><label> - </label></ion-icon>
 			{{ item.origen }}
 			<ion-item-group submenu text-wrap *ngIf="isGroupShown(i)">
 				<ion-item >ID: <b>{{ item.id }}</b></ion-item>
@@ -36,6 +38,7 @@
 				<ion-item submenu-item>Observaciones: <b>{{ item.observaciones }}</b></ion-item>
 				<ion-item submenu-item>
 					<ion-buttons end>
+						<button ion-button *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)">Cerrar Viaje</button>
 						<button ion-button (click)="verRecorrido($event, item)">Ver recorrido</button>
 					</ion-buttons>
 				</ion-item>

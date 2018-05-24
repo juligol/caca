@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
-import { Storage } from '@ionic/storage';
 import { AlertController } from 'ionic-angular';
-import { Home } from '../home/home';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { GlobalProvider } from "../../providers/global/global";
+import { MenuController } from 'ionic-angular';
+import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 
 declare var google;
 
@@ -33,11 +33,13 @@ export class Viaje {
 	constructor(public navCtrl: NavController, 
 			    public navParams: NavParams,
 			    private geolocation: Geolocation,
-			    private storage: Storage,
 				public alertCtrl: AlertController,
 				public loadingCtrl: LoadingController,
 				public http1: Http,
-				public global: GlobalProvider) {
+				public global: GlobalProvider,
+				public menuCtrl: MenuController) {
+					
+		this.menuCtrl.enable(false);
 					
 		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
@@ -167,7 +169,8 @@ export class Viaje {
 			estaClase.loadMap(position, false);
 			var myData = JSON.stringify({action: "posicionActual", viaje_id: estaClase.viajeActual.id, latitud: latitud, longitud: longitud, distancia: distancia});
 			estaClase.http.post(link, myData).subscribe(data => {
-				console.log(data["_body"]);
+				var dist = parseFloat(data["_body"]);
+				console.log("Distancia parcial guardada: " + dist + " Km");
 			}, 
 			error => {
 				console.log("Oooops!");
@@ -200,7 +203,7 @@ export class Viaje {
 			{
 				text: 'Aceptar',
 				handler: () => {
-					this.cerrarViaje();
+					this.detenerViaje();
 				}
 			}
 			]
@@ -208,7 +211,7 @@ export class Viaje {
 		alert.present();
 	}
 	
-	cerrarViaje() {
+	detenerViaje() {
 		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
 		this.global.intervalos[this.viajeActual.id] = null;
 		this.loader = this.loadingCtrl.create({
@@ -219,10 +222,16 @@ export class Viaje {
 		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
 		this.http.post(link, myData).subscribe(data => {
 			var distancia = parseFloat(data["_body"]);
-			console.log(distancia);
+			console.log("Distancia total recorrida: " + distancia + " Km");
 			if(distancia > 0)
 			{
-				this.navCtrl.setRoot(Home);
+				this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+			}
+			else
+			{
+				this.viajeActual.en_proceso = 0;
+				this.viajeIniciado = false;
+				this.callback({viaje: this.viajeActual});
 			}
 			this.loader.dismiss();
 		}, 

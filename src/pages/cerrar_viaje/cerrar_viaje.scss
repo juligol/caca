@@ -1,0 +1,11 @@
+page-cerrar_viaje {
+	.login-box {
+		@media (min-width: 992px){
+			margin-left: 33.33333333%;
+			width: 33.33333333%;
+		}
+		textarea {
+		   resize: none;
+		}
+    }
+}

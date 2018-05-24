@@ -9,29 +9,23 @@ import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
 import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
+import { GlobalProvider } from '../providers/global/global';
 
 //------------------------------Pages----------------------------------------
-import { HelloIonicPage } from '../pages/hello-ionic/hello-ionic';
-import { DetalleViaje } from '../pages/detalle_viaje/detalle_viaje';
-import { ListPage } from '../pages/list/list';
-import { Home } from '../pages/home/home';
 import { Login } from '../pages/login/login';
-import { Register } from '../pages/register/register';
 import { Logout } from '../pages/logout/logout';
+import { Home } from '../pages/home/home';
 import { Viaje } from '../pages/viaje/viaje';
-import { GlobalProvider } from '../providers/global/global';
+import { CerrarViaje } from '../pages/cerrar_viaje/cerrar_viaje';
 
 @NgModule({
   declarations: [
     MyApp,
-    HelloIonicPage,
-    ListPage,
-	Home,
 	Login,
-	Register,
 	Logout,
+	Home,
 	Viaje,
-    DetalleViaje
+	CerrarViaje
   ],
   imports: [
     BrowserModule,
@@ -42,14 +36,11 @@ import { GlobalProvider } from '../providers/global/global';
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-    HelloIonicPage,
-    ListPage,
-	Home,
 	Login,
-	Register,
 	Logout,
+	Home,
 	Viaje,
-    DetalleViaje
+	CerrarViaje
   ],
   providers: [
     StatusBar,

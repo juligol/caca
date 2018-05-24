@@ -1,13 +1,11 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
-import { LoadingController } from 'ionic-angular';
 import { MenuController } from 'ionic-angular';
-import { Home } from '../home/home';
-import { Register } from '../register/register';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
+import { Home } from '../home/home';
 
 @Component({
   selector: 'page-login',
@@ -18,8 +16,7 @@ export class Login {
 	private form : FormGroup;
 	//data:any = {};
 	
-	constructor(public loadingCtrl: LoadingController, 
-				public navCtrl: NavController, 
+	constructor(public navCtrl: NavController, 
 				private formBuilder: FormBuilder,
 				public menuCtrl: MenuController,
 				public http: Http,
@@ -40,10 +37,6 @@ export class Login {
 		
 		//this.data.response = '';
 		this.http = http;
-	}
-	
-	crearCuenta(){
-		this.navCtrl.push(Register);
 	}
 	
 	loginForm(){
