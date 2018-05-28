@@ -99,11 +99,9 @@ export class Viaje {
 			  center: this.myLatLng,
 			  zoom: 12
 			});
-			this.directionsDisplay.setMap(this.map);
 			this.directionsDisplay.setPanel(panelEle);
-		}else{
-			this.directionsDisplay.setMap(this.map);
 		}
+		this.directionsDisplay.setMap(this.map);
 		
 		google.maps.event.addListenerOnce(this.map, 'idle', () => {
 			if(estoyIniciando){
@@ -212,12 +210,13 @@ export class Viaje {
 	}
 	
 	detenerViaje() {
-		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
-		this.global.intervalos[this.viajeActual.id] = null;
 		this.loader = this.loadingCtrl.create({
 			content: "Por favor espere...",
 		});
 		this.loader.present();
+		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
+		this.global.intervalos[this.viajeActual.id] = null;
+		this.guardarPosicionActual(this);
 		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
 		this.http.post(link, myData).subscribe(data => {
@@ -229,15 +228,27 @@ export class Viaje {
 			}
 			else
 			{
-				this.viajeActual.en_proceso = 0;
-				this.viajeIniciado = false;
-				this.callback({viaje: this.viajeActual});
+				setTimeout(() => {this.reiniciarViaje();}, 1000);
 			}
 			this.loader.dismiss();
 		}, 
 		error => {
 			console.log("Oooops!");
 			this.loader.dismiss();
+		});
+	}
+	
+	reiniciarViaje(){
+		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.viajeActual.id});
+		this.http.post(link, myData).subscribe(data => {
+			console.log(data["_body"]);
+			this.viajeActual.en_proceso = 0;
+			this.viajeIniciado = false;
+			this.callback({viaje: this.viajeActual});
+		}, 
+		error => {
+			console.log("Oooops!");
 		});
 	}
 }

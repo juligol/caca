@@ -4,6 +4,7 @@ import { MenuController } from 'ionic-angular';
 import { NavController, NavParams } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
+import { Storage } from '@ionic/storage';
 import { Home } from '../home/home';
 
 @Component({
@@ -21,35 +22,41 @@ export class CerrarViaje{
 				private navCtrl: NavController,
 				public navParams: NavParams,
 				public http: Http,
-				private formBuilder: FormBuilder){
+				private formBuilder: FormBuilder,
+				private storage: Storage){
 					
 		this.viajeActual = navParams.get('viaje');
+		//console.log(this.viajeActual);
 		this.link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		
 		this.form = this.formBuilder.group({
-			distancia: ['', Validators.compose([Validators.required/*, Validators.float*/])],
-			espera: ['', Validators.compose([Validators.required/*, Validators.time*/])],
-			peajes: ['', Validators.compose([Validators.required/*, Validators.float*/])],
-			bonificacion: ['', Validators.compose([Validators.required/*, Validators.float*/])],
-			estacionamiento: ['', Validators.compose([Validators.required/*, Validators.float*/])],
+			distancia: ['', Validators.compose([Validators.required, Validators.pattern("[+-]?([0-9]*[.])?[0-9]+")])],
+			espera: ['', Validators.required],
+			peajes: ['', Validators.compose([Validators.required, Validators.pattern("[+-]?([0-9]*[.])?[0-9]+")])],
+			bonificacion: ['', Validators.compose([Validators.required, Validators.pattern("[+-]?([0-9]*[.])?[0-9]+")])],
+			estacionamiento: ['', Validators.compose([Validators.required, Validators.pattern("[+-]?([0-9]*[.])?[0-9]+")])],
 			regreso: ['', Validators.required],
-			voucher: ['', Validators.required],
-			observaciones: ['', Validators.required]
+			voucher: [''],
+			observaciones: ['']
 		});
 		
-		this.http = http;
-				
+		this.http = http;	
 	}
 	
 	loginForm(){
-		this.form.value.action = "cerrarViaje";
-		var myData = JSON.stringify(this.form.value);
-		this.http.post(this.link, myData).subscribe(data => {
-			console.log(data["_body"]);
-		}, 
-		error => {
-			console.log("Oooops!");
-			this.showError('Oooops! Por favor intente de nuevo!');
+		this.storage.get('user').then((user) => {
+			this.form.value.action = "cerrarViaje";
+			this.form.value.viaje = this.viajeActual;
+			this.form.value.chofer = user.id;
+			var myData = JSON.stringify(this.form.value);
+			this.http.post(this.link, myData).subscribe(data => {
+				console.log(data["_body"]);
+				this.navCtrl.setRoot(Home);
+			}, 
+			error => {
+				console.log("Oooops!");
+				this.showError('Oooops! Por favor intente de nuevo!');
+			});
 		});
 	}
 	

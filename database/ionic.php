@@ -65,6 +65,14 @@
 					$res = distanciaTotal($request, $conexion);
 					echo $res;
 					break;
+				case 'reiniciarViaje':
+					$res = reiniciarViaje($request, $conexion);
+					echo $res;
+					break;
+				case 'cerrarViaje':
+					$res = cerrarViaje($request, $conexion);
+					echo $res;
+					break;
 				default:
 					break;
 			}
@@ -112,6 +120,10 @@
 		$sqlEmpresa = "SELECT * FROM mab_empresas WHERE id = " . $viaje["empresa"];
 		$empresa = mysql_fetch_array(mysql_query($sqlEmpresa, $conexion));
 		$viaje["empresa"] = $empresa;
+		//Proveedor del viaje
+		$sqlProv = "SELECT * FROM mab_proveedores WHERE id = " . $viaje["id_prov"];
+		$prov = mysql_fetch_array(mysql_query($sqlProv, $conexion));
+		$viaje["proveedor"] = $prov;
 		//Centro de costo 1
 		$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc1"];
 		$cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
@@ -174,5 +186,71 @@
 		$viaje = mysql_fetch_array($result);
 		$viaje = completarViaje($viaje, $conexion);
 		return $viaje;
+	}
+
+	function reiniciarViaje($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$query = "DELETE FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		$query = "UPDATE mab_viajes SET en_proceso = 0 WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return "Exito al reinicir el viaje";
+	}
+
+	function cerrarViaje($request, $conexion)
+	{
+		$viaje = $request->viaje;
+		$proveedor = $viaje->proveedor;
+		$kmminimos = $proveedor->kmminimos;
+		$estacionamiento = $request->estacionamiento;
+		$peajes = $request->peajes;
+		$bonificacion = $request->bonificacion;
+		$voucher = $request->voucher;
+		$observaciones = $request->observaciones;
+		$chofer = $request->chofer;
+		$espera_real = $request->espera;
+   		$totespe = 0;
+	   	if ($espera_real <> "00:00")
+	   	{
+		  $hora = substr($espera_real,0,2);
+		  $minuto = substr($espera_real,3,2);
+		  $espe = ($hora * 60) + $minuto;
+		  $totespe = round(($espe * $valespera) / 60,2);
+	   	}
+		$sql="SELECT t.* FROM mab_tarifas t JOIN mab_proveedor_modulo pm ON pm.id_tarifa = t.id AND 
+						pm.id_proveedor = '$proveedor->id' AND pm.id_modulo = 1";
+        $res = mysql_query($sql,$conexion);
+        while($reg = mysql_fetch_array($res))
+        {
+		    $valor_minimo = $reg["valor_minimo"];
+		    $valor_km = $reg["valor_km"];
+		    $delta_bonif = ($reg["delta_bonif"] / 100);
+		    $valespera = $reg["valor_espera"];
+		}
+		$distancia_real = $request->distancia;
+		$valkm = round($distancia_real * $valor_km, 2);
+		if ($request->regreso == "S")
+	    {
+		   $distancia_real = $distancia_real * 2;
+		   $valkm = round($distancia_real * $valor_km * $delta_bonif, 2);
+	    }
+	    if ($distancia_real <= $kmminimos)
+	   	{
+           	$precio_final = $valor_minimo + $estacionamiento + $peajes + $totespe;
+	   	}
+	   	else
+	   	{
+	   		$precio_final = $valkm + $estacionamiento + $peajes + $totespe - $bonificacion;
+	   	}
+
+	   	$consulta = "UPDATE mab_viajes SET bonificacion = '$bonificacion', distancia_real = '$distancia_real', espera_real = '$espera_real',
+		peajes = '$peajes', estacionamiento = '$estacionamiento', regreso = '$regreso', /*remis = '$remis',*/ id_chofer = '$chofer',
+		precio_final = '$precio_final', status = 3, voucher = '$voucher', ".((($velocidadMaxima != null) && ($velocidadMaxima != '')) ? "velocidadMaxima='$velocidadMaxima' ," : "" )."observaciones = CONCAT(observaciones, '$observaciones'), 
+		fecha_cierre_proveedor = NOW() WHERE id = " . $viaje->id;
+
+		mysql_query($consulta, $conexion);
+                           
+		return $precio_final;
 	}
 ?>

@@ -17,7 +17,42 @@
 							<ion-input type="number" formControlName="distancia" placeholder="Distancia real del viaje en KM" required></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-input type="time" formControlName="espera" placeholder="Espera" required></ion-input>
+							<ion-label>Espera</ion-label>
+							<ion-select formControlName="espera" required>
+								<ion-option value="00:00">00:00</ion-option>
+								<ion-option value="00:05">00:05</ion-option>
+								<ion-option value="00:10">00:10</ion-option>
+								<ion-option value="00:15">00:15</ion-option>
+								<ion-option value="00:20">00:20</ion-option>
+								<ion-option value="00:25">00:25</ion-option>
+								<ion-option value="00:30">00:30</ion-option>
+								<ion-option value="00:35">00:35</ion-option>
+								<ion-option value="00:40">00:40</ion-option>
+								<ion-option value="00:45">00:45</ion-option>
+								<ion-option value="00:50">00:50</ion-option>
+								<ion-option value="00:55">00:55</ion-option>
+								<ion-option value="01:00">01:00</ion-option>
+								<ion-option value="01:05">01:05</ion-option>
+								<ion-option value="01:10">01:10</ion-option>
+								<ion-option value="01:15">01:15</ion-option>
+								<ion-option value="01:30">01:30</ion-option>
+								<ion-option value="01:45">01:45</ion-option>
+								<ion-option value="02:00">02:00</ion-option>
+								<ion-option value="02:15">02:15</ion-option>
+								<ion-option value="02:30">02:30</ion-option>
+								<ion-option value="02:45">02:45</ion-option>
+								<ion-option value="03:00">03:00</ion-option>
+								<ion-option value="03:15">03:15</ion-option>
+								<ion-option value="03:30">03:30</ion-option>
+								<ion-option value="03:45">03:45</ion-option>
+								<ion-option value="04:00">04:00</ion-option>
+								<ion-option value="05:00">05:00</ion-option>
+								<ion-option value="06:00">06:00</ion-option>
+								<ion-option value="07:00">07:00</ion-option>
+								<ion-option value="08:00">08:00</ion-option>
+								<ion-option value="09:00">09:00</ion-option>
+								<ion-option value="10:00">10:00</ion-option>
+							</ion-select>
 						</ion-item>
 						<ion-item>
 							<ion-input type="number" formControlName="peajes" placeholder="Peajes" required></ion-input>
@@ -29,13 +64,17 @@
 							<ion-input type="number" formControlName="estacionamiento" placeholder="Estacionamiento" required></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-input type="text" formControlName="regreso" placeholder="Regreso" required></ion-input>
+							<ion-label>Regreso</ion-label>
+							<ion-select formControlName="regreso" required>
+								<ion-option value="N">No</ion-option>
+								<ion-option value="S">Si</ion-option>
+							</ion-select>
 						</ion-item>
 						<ion-item>
-							<ion-input type="text" formControlName="voucher" placeholder="Si usa Voucher, colocar el numero" required></ion-input>
+							<ion-input type="text" formControlName="voucher" placeholder="Si usa Voucher, colocar el número"></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-textarea  formControlName="observaciones" placeholder="Agregar Observaciones" required></ion-textarea>
+							<ion-textarea formControlName="observaciones" placeholder="Agregar Observaciones"></ion-textarea>
 						</ion-item>
 					</ion-list>
 				</ion-col>
