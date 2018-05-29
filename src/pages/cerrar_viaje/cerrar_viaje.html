@@ -9,7 +9,7 @@
 
 <ion-content padding>
 	<div class="login-box">
-		<form [formGroup]="form" (ngSubmit)="loginForm()">
+		<form [formGroup]="form" (ngSubmit)="cerrarViajeForm()">
 			<ion-row>
 				<ion-col>
 					<ion-list inset>
@@ -17,8 +17,17 @@
 							<ion-input type="number" formControlName="distancia" placeholder="Distancia real del viaje en KM" required></ion-input>
 						</ion-item>
 						<ion-item>
+							<ion-label>Remis</ion-label>
+							<ion-select formControlName="remis" interface="popover">
+								<ion-option value>SIN ESPECIFICAR</ion-option>
+								<ion-option *ngFor="let remis of remises;" value="{{ remis.marca }} - {{ remis.modelo }} - {{ remis.dominio }}">
+									{{ remis.marca }} - {{ remis.modelo }} - {{ remis.dominio }}
+								</ion-option>
+							</ion-select>
+						</ion-item>
+						<ion-item>
 							<ion-label>Espera</ion-label>
-							<ion-select formControlName="espera" required>
+							<ion-select formControlName="espera" interface="popover">
 								<ion-option value="00:00">00:00</ion-option>
 								<ion-option value="00:05">00:05</ion-option>
 								<ion-option value="00:10">00:10</ion-option>
@@ -55,17 +64,17 @@
 							</ion-select>
 						</ion-item>
 						<ion-item>
-							<ion-input type="number" formControlName="peajes" placeholder="Peajes" required></ion-input>
+							<ion-input type="number" formControlName="peajes" placeholder="Peajes"></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-input type="number" formControlName="bonificacion" placeholder="Bonificación" required></ion-input>
+							<ion-input type="number" formControlName="bonificacion" placeholder="Bonificación"></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-input type="number" formControlName="estacionamiento" placeholder="Estacionamiento" required></ion-input>
+							<ion-input type="number" formControlName="estacionamiento" placeholder="Estacionamiento"></ion-input>
 						</ion-item>
 						<ion-item>
 							<ion-label>Regreso</ion-label>
-							<ion-select formControlName="regreso" required>
+							<ion-select formControlName="regreso" interface="popover">
 								<ion-option value="N">No</ion-option>
 								<ion-option value="S">Si</ion-option>
 							</ion-select>

@@ -19,15 +19,27 @@ page-home {
 			}
 		}
 		
-		.ion-md-checkmark-circle, ion-ios-checkmark-circle {
+		.ion-md-checkmark-circle{
 			color: #2ec95c !important;
 		}
 		
-		.ion-md-car, ion-ios-car {
+		.ion-ios-checkmark-circle {
+			color: #2ec95c !important;
+		}
+		
+		.ion-md-car {
 			color: #488aff  !important;
 		}
 		
-		.ion-md-unlock, ion-ios-unlock {
+		.ion-ios-car {
+			color: #488aff  !important;
+		}
+		
+		.ion-md-unlock {
+			color: #e13838 !important;
+		}
+		
+		.ion-ios-unlock {
 			color: #e13838 !important;
 		}
 	}

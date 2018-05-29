@@ -2,9 +2,9 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { MenuController } from 'ionic-angular';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
-import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
+import { GlobalProvider } from "../../providers/global/global";
 import { Home } from '../home/home';
 
 @Component({
@@ -14,37 +14,34 @@ import { Home } from '../home/home';
 
 export class Login {
 	private form : FormGroup;
-	//data:any = {};
 	
 	constructor(public navCtrl: NavController, 
 				private formBuilder: FormBuilder,
 				public menuCtrl: MenuController,
-				public http: Http,
 				public alertCtrl: AlertController,
-				private storage: Storage){
+				private storage: Storage,
+				public global: GlobalProvider){
 					
 		this.menuCtrl.enable(false);
 		
 		this.storage.get('user').then((val) => {
-			if(val)
+			if(val){
+				this.global.loading();
 				this.navCtrl.setRoot(Home);
+			}
 		});
 					
 		this.form = this.formBuilder.group({
 			email: ['', Validators.compose([Validators.required, Validators.email])],
 			password: ['', Validators.required]
 		});
-		
-		//this.data.response = '';
-		this.http = http;
 	}
 	
 	loginForm(){
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
+		this.global.loading();
 		this.form.value.action = "login";
 		var myData = JSON.stringify(this.form.value);
-		this.http.post(link, myData).subscribe(data => {
-			//this.data.response = data["_body"];
+		this.global.http.post(this.global.link, myData).subscribe(data => {
 			var usuario = JSON.parse(data["_body"]);
 			if(usuario)
 			{
@@ -62,10 +59,11 @@ export class Login {
 	}
 	
 	showError(texto) {
+		this.global.loader.dismiss();
 		let alert = this.alertCtrl.create({
-		  title: 'Error',
-		  subTitle: texto,
-		  buttons: ['OK']
+			title: 'Error',
+			subTitle: texto,
+			buttons: ['OK']
 		});
 		alert.present();
 	}
@@ -75,9 +73,9 @@ export class Login {
 	showPassword() {
 		this.showPass = !this.showPass;
 		if(this.showPass){
-		  this.type = 'text';
+			this.type = 'text';
 		} else {
-		  this.type = 'password';
+			this.type = 'password';
 		}
 	}
   

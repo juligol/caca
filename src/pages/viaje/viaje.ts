@@ -2,8 +2,6 @@ import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import { AlertController } from 'ionic-angular';
-import { LoadingController } from 'ionic-angular';
-import { Http } from '@angular/http';
 import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
@@ -22,11 +20,8 @@ export class Viaje {
 	directionsDisplay: any = null;
 	myLatLng: any;
 	destino: any;
-	loader: any;
-	http: Http;
 	marker: any;
 	interval: any;
-	link: any;
 	callback: any;
 	viajeIniciado: Boolean = false;
 
@@ -34,22 +29,14 @@ export class Viaje {
 			    public navParams: NavParams,
 			    private geolocation: Geolocation,
 				public alertCtrl: AlertController,
-				public loadingCtrl: LoadingController,
-				public http1: Http,
 				public global: GlobalProvider,
 				public menuCtrl: MenuController) {
 					
 		this.menuCtrl.enable(false);
 					
-		this.loader = this.loadingCtrl.create({
-			content: "Por favor espere...",
-		});
-		this.loader.present();
-		this.link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		this.viajeActual = navParams.get('item');
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer();
-		this.http = http1;
 		
 		if(this.viajeActual.en_proceso == 1)
 			this.viajeIniciado = true;
@@ -73,13 +60,6 @@ export class Viaje {
 		}).catch(error =>{
 			console.log(error);
 		});
-		
-		/*this.geolocation.watchPosition().subscribe(response => {
-			this.loadMap(response);
-		}, 
-		(error) => {
-		  console.log(error);
-		});*/
 	}
   
 	loadMap(position: Geoposition, estoyIniciando){
@@ -126,22 +106,20 @@ export class Viaje {
 			avoidTolls: true
 		}, (response, status)=> {
 			if(status === google.maps.DirectionsStatus.OK) {
-				//console.log(response);
 				this.directionsDisplay.setDirections(response);
 			}else{
 				alert('No se pudieron cargar las direcciones debido a: ' + status);
 			}
 			//Esperar un cachito mas 
-			setTimeout(() => {this.loader.dismiss();}, 1000);
+			setTimeout(() => {this.global.loader.dismiss();}, 1000);
 		});  
 	}
 	
 	comenzarViaje() {
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
-		this.http.post(link, myData).subscribe(data => {
-			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 2000);
+		this.global.http.post(this.global.link, myData).subscribe(data => {
 			//5 minutos son 300000 ms;
+			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 2000);
 			this.global.intervalos[this.viajeActual.id] = this.interval;
 			this.viajeActual.en_proceso = 1;
 			this.viajeIniciado = true;
@@ -152,7 +130,6 @@ export class Viaje {
 	}
 	
 	guardarPosicionActual(estaClase) {
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var options = {enableHighAccuracy: true};
 		navigator.geolocation.getCurrentPosition(function (position) {
 			let latitud = position.coords.latitude;
@@ -163,10 +140,9 @@ export class Viaje {
 			//Posicion nueva
 			console.log(miPosicionActual);
 			let distancia = estaClase.calcularDistanciaEntre(estaClase.myLatLng.lat, miPosicionActual.lat, estaClase.myLatLng.lng, miPosicionActual.lng);
-			//console.log(distancia);
 			estaClase.loadMap(position, false);
 			var myData = JSON.stringify({action: "posicionActual", viaje_id: estaClase.viajeActual.id, latitud: latitud, longitud: longitud, distancia: distancia});
-			estaClase.http.post(link, myData).subscribe(data => {
+			estaClase.global.http.post(estaClase.global.link, myData).subscribe(data => {
 				var dist = parseFloat(data["_body"]);
 				console.log("Distancia parcial guardada: " + dist + " Km");
 			}, 
@@ -210,16 +186,12 @@ export class Viaje {
 	}
 	
 	detenerViaje() {
-		this.loader = this.loadingCtrl.create({
-			content: "Por favor espere...",
-		});
-		this.loader.present();
+		this.global.loading();
 		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
 		this.global.intervalos[this.viajeActual.id] = null;
 		this.guardarPosicionActual(this);
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
-		this.http.post(link, myData).subscribe(data => {
+		this.global.http.post(this.global.link, myData).subscribe(data => {
 			var distancia = parseFloat(data["_body"]);
 			console.log("Distancia total recorrida: " + distancia + " Km");
 			if(distancia > 0)
@@ -230,18 +202,17 @@ export class Viaje {
 			{
 				setTimeout(() => {this.reiniciarViaje();}, 1000);
 			}
-			this.loader.dismiss();
+			this.global.loader.dismiss();
 		}, 
 		error => {
 			console.log("Oooops!");
-			this.loader.dismiss();
+			this.global.loader.dismiss();
 		});
 	}
 	
 	reiniciarViaje(){
-		var link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.viajeActual.id});
-		this.http.post(link, myData).subscribe(data => {
+		this.global.http.post(this.global.link, myData).subscribe(data => {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.viajeIniciado = false;

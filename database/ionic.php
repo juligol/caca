@@ -124,6 +124,14 @@
 		$sqlProv = "SELECT * FROM mab_proveedores WHERE id = " . $viaje["id_prov"];
 		$prov = mysql_fetch_array(mysql_query($sqlProv, $conexion));
 		$viaje["proveedor"] = $prov;
+		//Remises del proveedor
+		$remises = [];
+		$sqlRemises = "SELECT * FROM mab_remises WHERE proveedor = " . $viaje["id_prov"];
+		$result = mysql_query($sqlRemises, $conexion);
+		while($remis = mysql_fetch_array($result)){
+			array_push($remises, $remis);
+		}
+		$viaje["remises"] = $remises;
 		//Centro de costo 1
 		$sqlcc = "SELECT * FROM mab_centros WHERE id = " . $viaje["id_cc1"];
 		$cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
@@ -208,15 +216,18 @@
 		$bonificacion = $request->bonificacion;
 		$voucher = $request->voucher;
 		$observaciones = $request->observaciones;
-		$chofer = $request->chofer;
+		$chofer_id = $request->chofer_id;
+		$chofer_nombre = $request->chofer_nombre;
+		$remis = $request->remis;
+		$regreso = $request->regreso;
 		$espera_real = $request->espera;
    		$totespe = 0;
 	   	if ($espera_real <> "00:00")
 	   	{
-		  $hora = substr($espera_real,0,2);
-		  $minuto = substr($espera_real,3,2);
+		  $hora = substr($espera_real, 0, 2);
+		  $minuto = substr($espera_real, 3, 2);
 		  $espe = ($hora * 60) + $minuto;
-		  $totespe = round(($espe * $valespera) / 60,2);
+		  $totespe = round(($espe * $valespera) / 60, 2);
 	   	}
 		$sql="SELECT t.* FROM mab_tarifas t JOIN mab_proveedor_modulo pm ON pm.id_tarifa = t.id AND 
 						pm.id_proveedor = '$proveedor->id' AND pm.id_modulo = 1";
@@ -230,7 +241,7 @@
 		}
 		$distancia_real = $request->distancia;
 		$valkm = round($distancia_real * $valor_km, 2);
-		if ($request->regreso == "S")
+		if ($regreso == "S")
 	    {
 		   $distancia_real = $distancia_real * 2;
 		   $valkm = round($distancia_real * $valor_km * $delta_bonif, 2);
@@ -245,11 +256,145 @@
 	   	}
 
 	   	$consulta = "UPDATE mab_viajes SET bonificacion = '$bonificacion', distancia_real = '$distancia_real', espera_real = '$espera_real',
-		peajes = '$peajes', estacionamiento = '$estacionamiento', regreso = '$regreso', /*remis = '$remis',*/ id_chofer = '$chofer',
+		peajes = '$peajes', estacionamiento = '$estacionamiento', regreso = '$regreso', remis = '$remis', id_chofer = '$chofer_id',
 		precio_final = '$precio_final', status = 3, voucher = '$voucher', ".((($velocidadMaxima != null) && ($velocidadMaxima != '')) ? "velocidadMaxima='$velocidadMaxima' ," : "" )."observaciones = CONCAT(observaciones, '$observaciones'), 
 		fecha_cierre_proveedor = NOW() WHERE id = " . $viaje->id;
 
 		mysql_query($consulta, $conexion);
+
+		//Empiezan los CC
+		$id = $viaje->id;
+		$c1 = $viaje->id_cc1;
+		$c2 = $viaje->id_cc2;
+		$c3 = $viaje->id_cc3;
+		$c4 = $viaje->id_cc4;
+		$tf1 = 0;
+		$tf2 = 0;
+		$tf3 = 0;
+		$tf4 = 0;
+		$modulo_actual = 1;
+		$cantidadDeCC = 0;
+		for($i = 1; $i <= 4; $i++){
+			$cc = "id_cc".$i;
+            if ($viaje->$cc <> 0)
+                $cantidadDeCC++;
+        }
+
+        $precio = $viaje->precio;
+        $precio_cal = round($precio_final / $cantidadDeCC, 2);
+        $precioes_cal = round($precio / $cantidadDeCC, 2);
+
+		$tf1 += $precio_cal;
+		$te1 += $precioes_cal;
+		if ($c2 <> 0) {
+			if ($c2 == $c1) {
+				$tf1 += $precio_cal;
+				$te1 += $precioes_cal;
+			} else {
+				$tf2 += $precio_cal;
+				$te2 += $precioes_cal;
+			}
+		}
+		if ($c3 <> 0) {
+			if ($c3 == $c1) {
+				$tf1 += $precio_cal;
+				$te1 += $precioes_cal;
+			} elseif ($c3 == $c2) {
+				$tf2 += $precio_cal;
+				$te2 += $precioes_cal;
+			} else {
+				$tf3 += $precio_cal;
+				$te3 += $precioes_cal;
+			}
+		}
+		if ($c4 <> 0) {
+			if ($c4 == $c1) {
+				$tf1 += $precio_cal;
+				$te1 += $precioes_cal;
+			} elseif ($c4 == $c2) {
+				$tf2 += $precio_cal;
+				$te2 += $precioes_cal;
+			} elseif ($c4 == $c3) {
+				$tf3 += $precio_cal;
+				$te3 += $precioes_cal;
+			} else {
+				$tf4 += $precio_cal;
+				$te4 += $precioes_cal;
+			}
+		}
+
+		if ($c1 <> 0) {
+			$consulta = "INSERT INTO mab_viajes_cc (id_viaje,id_cc,costo_est,costo_real,estado,observ) VALUES ('$id', '$c1', '$te1', '$tf1', 0, ' ')";
+			mysql_query($consulta, $conexion);
+		}
+		if ($c2 <> 0) {
+			$consulta = "INSERT INTO mab_viajes_cc (id_viaje,id_cc,costo_est,costo_real,estado,observ) VALUES ('$id', '$c2', '$te2', '$tf2', 0, ' ')";
+			mysql_query($consulta, $conexion);
+		}
+		if ($c3 <> 0) {
+			$consulta = "INSERT INTO mab_viajes_cc (id_viaje,id_cc,costo_est,costo_real,estado,observ) VALUES ('$id', '$c3', '$te3', '$tf3', 0, ' ')";
+			mysql_query($consulta, $conexion);
+		}
+		if ($c4 <> 0) {
+			$consulta = "INSERT INTO mab_viajes_cc (id_viaje,id_cc,costo_est,costo_real,estado,observ) VALUES ('$id', '$c4', '$te4', '$tf4', 0, ' ')";
+			mysql_query($consulta, $conexion);
+		}
+
+		$cc = 0;
+		$cadu = "SELECT * FROM mab_viajes_cc WHERE id_viaje = " . $id;
+		$rsu = mysql_query($cadu, $conexion);
+		$nuu = mysql_num_rows($rsu);
+		if ($nuu <= 0) {
+			$wn = 0;
+		} else {
+			while ($rgu = mysql_fetch_array($rsu)) {
+				if ($cc <> $rgu["id_cc"]) {
+					$cc = $rgu["id_cc"];
+					$cadun = "SELECT mab_usu_cc.id_usu,
+					               mab_usu_cc.centro,
+								   mab_usuarios.usuario,
+								   mab_usuarios.nombre
+								   FROM mab_usu_cc 
+								   INNER JOIN mab_usuarios ON mab_usu_cc.id_usu = mab_usuarios.id
+								   WHERE mab_usuarios.recibe_mail_cierre_gerente = 'S'
+								   AND mab_usu_cc.centro = " . $cc;
+					$rsun = mysql_query($cadun, $conexion);
+					$nuun = mysql_num_rows($rsun);
+					
+					if ($nuun <= 0) {
+						$wn = 0;
+					} else {
+						while ($rgun = mysql_fetch_array($rsun)) {
+							//La eleccion sobre si desea mail se hace en la query, donde se seleccionan solo si quieren mail
+							$nombre = $rgun["nombre"];
+							$desti = $rgun["usuario"];
+							$vname = " MAB MObile";
+							$asunto = "Viaje pendiente para autorizar.";
+							$mensaje = "
+							  Sr. " . $nombre . " el siguiente viaje esta para su autorización : <br>
+							  Para fecha : " . substr($viaje->fecha, 8, 2) . "/" . substr($viaje->fecha, 5, 2) . "/" . substr($viaje->fecha, 0, 4) . " a las " . $viaje->hora . "<br>
+							  ID viaje : " . $id . " <br>
+							  Servicio: REMISES <br>
+							  Origen : " . $viaje->origen . " <br>
+							  Destino : " . $viaje->destino . "<br>
+							  Pasajeros : " . $viaje->pasajero1 . " / " . $viaje->pasajero2 . " / " . $viaje->pasajero3 . " / " . $viaje->pasajero4 . "<br>
+							  Observaciones : " . $observaciones . "<br><br>
+							  Auto : " . $remis . "<br>  
+							  Chofer : " . $chofer_nombre . "<br>
+							  Muchas gracias. ";
+
+							$cabeceras = 'MIME-Version: 1.0' . "\r\n";
+							$cabeceras .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+							$cabeceras .= "From: MAB Mobile - Remises <envios@mabmobile.com.ar> \r\n";
+							mail($desti, $asunto, $mensaje, $cabeceras);
+							echo "E-mail enviado a " . $desti . " ";
+						}
+					}
+				} else {
+					$wn = 0;
+				}
+			}
+		}
                            
 		return $precio_final;
 	}
