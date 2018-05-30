@@ -25,6 +25,7 @@ export class CerrarViaje{
 					
 		this.viajeActual = navParams.get('viaje');
 		this.remises = this.viajeActual.remises;
+		//console.log(this.viajeActual);
 		
 		this.form = this.formBuilder.group({
 			remis: [''],
@@ -39,7 +40,9 @@ export class CerrarViaje{
 		});
 		
 		this.form.get('espera').setValue("00:00");
-		this.form.get('regreso').setValue("N");	
+		this.form.get('regreso').setValue("N");
+		if(this.remises.some(remis => (remis.marca + " - " + remis.modelo + " - " + remis.dominio) === this.viajeActual.remis))
+			this.form.get('remis').setValue(this.viajeActual.remis);	
 	}
 	
 	cerrarViajeForm(){

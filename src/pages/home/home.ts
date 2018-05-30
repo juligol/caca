@@ -39,7 +39,8 @@ export class Home{
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
-				this.global.loader.dismiss();
+				if(parametros.cargando)
+					this.global.loader.dismiss();
 				this.menuCtrl.enable(true);
 				var viaje_id = parametros.viaje.id;
 				this.viajes = this.viajes.map((item) => {
@@ -142,8 +143,8 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		//this.verificarGPS(event, item);
-		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		this.verificarGPS(event, item);
+		//this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 	
 	verificarGPS(event, item){

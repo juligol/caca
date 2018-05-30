@@ -15,10 +15,10 @@
 	</ion-refresher>
 	<ion-list>
 		<ion-item *ngFor="let item of items; let i=index" (click)="verSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
-			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" name="checkmark-circle"><label> - </label></ion-icon>
-			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0" name="car"><label> - </label></ion-icon>
-			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" name="unlock"><label> - </label></ion-icon>
-			{{ item.origen }}
+			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" name="checkmark-circle"></ion-icon> 
+			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0" name="car"></ion-icon> 
+			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" name="unlock"></ion-icon> 
+			({{ item.id }}) {{ item.origen }}
 			<ion-item-group submenu text-wrap *ngIf="isGroupShown(i)">
 				<ion-item >ID: <b>{{ item.id }}</b></ion-item>
 				<ion-item submenu-item>Fecha: <b>{{ item.fecha }} {{ item.hora }}</b></ion-item>
@@ -38,7 +38,7 @@
 				<ion-item submenu-item>Observaciones: <b>{{ item.observaciones }}</b></ion-item>
 				<ion-item submenu-item>
 					<ion-buttons end>
-						<button ion-button *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)">Cerrar Viaje</button>
+						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)">Cerrar Viaje</button>
 						<button ion-button (click)="verRecorrido($event, item)">Ver recorrido</button>
 					</ion-buttons>
 				</ion-item>

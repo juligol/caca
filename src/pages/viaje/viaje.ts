@@ -5,6 +5,7 @@ import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
+import { Home } from '../home/home';
 
 declare var google;
 
@@ -24,6 +25,7 @@ export class Viaje {
 	interval: any;
 	callback: any;
 	viajeIniciado: Boolean = false;
+	cargando: Boolean = true;
 
 	constructor(public navCtrl: NavController, 
 			    public navParams: NavParams,
@@ -47,7 +49,7 @@ export class Viaje {
 	}
 	
 	ionViewWillLeave() {
-		this.callback({viaje: this.viajeActual});
+		this.callback({viaje: this.viajeActual, cargando: this.cargando});
 	}
   
 	ionViewDidLoad(){
@@ -196,13 +198,19 @@ export class Viaje {
 			console.log("Distancia total recorrida: " + distancia + " Km");
 			if(distancia > 0)
 			{
-				this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+				if(this.viajeActual.fechaValida){
+					this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+					this.cargando = true;
+				}
+				else{
+					this.navCtrl.setRoot(Home);
+					this.cargando = false;
+				}
 			}
 			else
 			{
 				setTimeout(() => {this.reiniciarViaje();}, 1000);
 			}
-			this.global.loader.dismiss();
 		}, 
 		error => {
 			console.log("Oooops!");
@@ -216,7 +224,9 @@ export class Viaje {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.viajeIniciado = false;
-			this.callback({viaje: this.viajeActual});
+			this.cargando = true;
+			//this.callback({viaje: this.viajeActual, cargando: this.cargando});
+			this.global.loader.dismiss();
 		}, 
 		error => {
 			console.log("Oooops!");

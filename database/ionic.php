@@ -157,6 +157,12 @@
 			$cc = mysql_fetch_array(mysql_query($sqlcc, $conexion));
 			$viaje["cc4"] = $cc;
 		}
+		//Hora valida
+		$datetime1 = new DateTime();
+		$datetime2 = new DateTime($viaje["fecha"] . " " . $viaje["hora"]);
+		$interval = $datetime2->diff($datetime1);
+		$viaje["fechaValida"] = $interval->format('%R%a') >= 0;
+
 		return $viaje;
 	}
 	
