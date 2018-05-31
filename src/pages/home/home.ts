@@ -77,10 +77,10 @@ export class Home{
 	
 	inicializarListado(viajes){
 		this.viajesAux = viajes;
-		if(viajes.length < 10){
+		if(viajes.length < 15){
 			this.contador = viajes.length;
 		}else{
-			this.contador = 10;
+			this.contador = 15;
 		}
 		this.items = [];
 		for (var i = 0; i < this.contador; i++) {
@@ -143,8 +143,8 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		this.verificarGPS(event, item);
-		//this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		//this.verificarGPS(event, item);
+		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 	
 	verificarGPS(event, item){

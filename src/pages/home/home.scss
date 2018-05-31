@@ -1,11 +1,5 @@
 page-home {
 	ion-content{
-		.box {
-			@media (min-width: 992px){
-				margin-left: 33.33333333%;
-				width: 33.33333333%;
-			}
-		}
 		ion-item-group[submenu] {
 			.label-md {
 				margin: 0;
@@ -13,10 +7,12 @@ page-home {
 			}
 		}
 		
-		.item-icon{
-			label {
-				color: #000  !important;
-			}
+		.ion-md-pin {
+			color: #488aff  !important;
+		}
+		
+		.ion-ios-pin {
+			color: #488aff  !important;
 		}
 		
 		.ion-md-checkmark-circle{
