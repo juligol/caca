@@ -121,7 +121,7 @@ export class Viaje {
 		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			//5 minutos son 300000 ms;
-			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 2000);
+			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
 			this.global.intervalos[this.viajeActual.id] = this.interval;
 			this.viajeActual.en_proceso = 1;
 			this.viajeIniciado = true;
