@@ -112,10 +112,25 @@ export class Home{
 		// if the value is an empty string don't filter the items
 		if (this.busqueda && this.busqueda.trim() != '') {
 			this.viajesAux = this.viajes.filter((item) => {
-				return (item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
+				return this.busquedaPorID(item) || this.busquedaPorOrigen(item) || this.busquedaPorPasajero(item);
 			});
 			this.inicializarListado(this.viajesAux);
 		}
+	}
+	
+	busquedaPorID(item){
+		return (item.id.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
+	}
+	
+	busquedaPorOrigen(item){
+		return (item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
+	}
+	
+	busquedaPorPasajero(item){
+		return  (item.pasajero1.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
+				(item.pasajero2.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
+				(item.pasajero3.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
+				(item.pasajero4.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
 	}
 	
 	actualizarListado(refresher) {

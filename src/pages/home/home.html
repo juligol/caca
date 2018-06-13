@@ -26,7 +26,7 @@
 				<ion-item submenu-item>Pedido por: <b>{{ item.responsable.nombre }}</b></ion-item>
 				<ion-item submenu-item>Empresa: <b>{{ item.empresa.nombre }}</b></ion-item>
 				<!--ion-item submenu-item>Proveedor: <b>{{ item.proveedor.nombre }}</b></ion-item-->
-				<!--ion-item submenu-item>Origen: <b>{{ item.origen }}</b></ion-item-->
+				<ion-item submenu-item>Origen: <b>{{ item.origen }}</b></ion-item>
 				<ion-item submenu-item>Destino: <b>{{ item.destino }}</b></ion-item>
 				<ion-item submenu-item>Pasajero 1: <b>{{ item.pasajero1.trim() }}</b></ion-item>
 				<ion-item submenu-item>Centro de costo 1: <b>{{ item.cc1.descripcion }}</b></ion-item>
@@ -37,6 +37,7 @@
 				<ion-item submenu-item *ngIf="item.pasajero4.trim() != ''">Pasajero 4: <b>{{ item.pasajero4.trim() }}</b></ion-item>
 				<ion-item submenu-item *ngIf="item.pasajero4.trim() != ''">Centro de costo 4: <b>{{ item.cc4.descripcion }}</b></ion-item>
 				<ion-item submenu-item>Observaciones: <b>{{ item.observaciones }}</b></ion-item>
+				<ion-item submenu-item *ngIf="item.status != 1" >Distancia recorrida: <b>{{ item.distancia_total_recorrida }} km</b></ion-item>
 				<ion-item submenu-item>
 					<ion-buttons end>
 						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)" clear>Cerrar</button>
