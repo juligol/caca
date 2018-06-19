@@ -102,7 +102,8 @@ export class Viaje {
 
 	private calcularRuta(){
 		this.directionsService.route({
-			origin: this.myLatLng,
+			//origin: this.myLatLng,
+			origin: this.viajeActual.origen,
 			destination: this.viajeActual.destino,
 			travelMode: google.maps.TravelMode.DRIVING,
 			avoidTolls: true
