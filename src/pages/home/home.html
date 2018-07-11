@@ -21,7 +21,7 @@
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" name="unlock"></ion-icon> 
 			({{ item.id }}) {{ item.origen }}
 			<ion-item-group submenu text-wrap *ngIf="isGroupShown(i)">
-				<ion-item >ID: <b>{{ item.id }}</b></ion-item>
+				<ion-item submenu-item>ID: <b>{{ item.id }}</b></ion-item>
 				<ion-item submenu-item>Fecha: <b>{{ item.fecha }} {{ item.hora }}</b></ion-item>
 				<ion-item submenu-item>Pedido por: <b>{{ item.responsable.nombre }}</b></ion-item>
 				<ion-item submenu-item>Empresa: <b>{{ item.empresa.nombre }}</b></ion-item>
@@ -40,6 +40,7 @@
 				<ion-item submenu-item *ngIf="item.status != 1" >Distancia recorrida: <b>{{ item.distancia_total_recorrida }} km</b></ion-item>
 				<ion-item submenu-item>
 					<ion-buttons end>
+						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" color="danger" (click)="preguntarRechazarViaje($event, item)" clear>Rechazar</button>
 						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)" clear>Cerrar</button>
 						<button ion-button (click)="verRecorrido($event, item)" clear>Ver</button>
 					</ion-buttons>

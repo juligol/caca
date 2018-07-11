@@ -128,7 +128,7 @@ export class Viaje {
 			this.viajeIniciado = true;
 		}, 
 		error => {
-			console.log("Oooops!");
+			this.global.showError("Oooops! Por favor intente de nuevo!");
 		});
 	}
 	
@@ -150,10 +150,11 @@ export class Viaje {
 				console.log("Distancia parcial guardada: " + dist + " Km");
 			}, 
 			error => {
-				console.log("Oooops!");
+				this.global.showError("Oooops! Por favor intente de nuevo!");
 			});
-		}, function (error) {
-			console.log(error);
+		}, 
+		function (error) {
+			this.global.showError("No se pudo obtener su ubicación actual!");
 		}, options);
 	}
 	
@@ -214,8 +215,7 @@ export class Viaje {
 			}
 		}, 
 		error => {
-			console.log("Oooops!");
-			this.global.loader.dismiss();
+			this.global.showError("Oooops! Por favor intente de nuevo!");
 		});
 	}
 	
@@ -230,7 +230,7 @@ export class Viaje {
 			this.global.loader.dismiss();
 		}, 
 		error => {
-			console.log("Oooops!");
+			this.global.showError("Oooops! Por favor intente de nuevo!");
 		});
 	}
 }

@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { AlertController } from 'ionic-angular';
 import { NavController, NavParams } from 'ionic-angular';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
 import { Storage } from '@ionic/storage';
@@ -16,8 +15,7 @@ export class CerrarViaje{
 	viajeActual: any;
 	remises = [];
 
-	constructor(public alertCtrl: AlertController, 
-				private navCtrl: NavController,
+	constructor(private navCtrl: NavController,
 				public navParams: NavParams,
 				private formBuilder: FormBuilder,
 				private storage: Storage,
@@ -58,18 +56,8 @@ export class CerrarViaje{
 				this.navCtrl.setRoot(Home);
 			}, 
 			error => {
-				console.log("Oooops!");
-				this.showError('Oooops! Por favor intente de nuevo!');
+				this.global.showError('Oooops! Por favor intente de nuevo!');
 			});
 		});
-	}
-	
-	showError(texto) {
-		let alert = this.alertCtrl.create({
-		  title: 'Error',
-		  subTitle: texto,
-		  buttons: ['OK']
-		});
-		alert.present();
 	}
 }

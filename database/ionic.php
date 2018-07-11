@@ -49,6 +49,10 @@
 					$res = login($request, $conexion);
 					echo json_encode($res);
 					break;
+				case 'password':
+					$res = password($request, $conexion);
+					echo json_encode($res);
+					break;
 				case 'get_viaje':
 					$res = get_viaje($request, $conexion);
 					echo json_encode($res);
@@ -63,6 +67,10 @@
 					break;
 				case 'distanciaTotal':
 					$res = distanciaTotal($request, $conexion);
+					echo $res;
+					break;
+				case 'rechazarViaje':
+					$res = rechazarViaje($request, $conexion);
 					echo $res;
 					break;
 				case 'reiniciarViaje':
@@ -98,6 +106,26 @@
 		return mysql_fetch_array($result);
 	}
 	
+	function password($request, $conexion)
+	{
+		$email = $request->email;
+		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'CHOFER' AND estado = 'ACTIVO' AND usuario = '$email'";
+		$result = mysql_query($query, $conexion);
+		$usuario = mysql_fetch_array($result);
+		if($usuario){
+			$nombre = $usuario["nombre"];
+			$desti = $usuario["usuario"];
+			$password = $usuario["password"];
+			$asunto = "Recuperación contraseña.";
+			$mensaje = "Sr. " . $nombre . " su contraseña actual es : " . $password . " <br><br> Muchas gracias. ";
+			$cabeceras = 'MIME-Version: 1.0' . "\r\n";
+			$cabeceras .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+			$cabeceras .= "From: MAB Mobile - Remises <envios@mabmobile.com.ar> \r\n";
+			mail($desti, $asunto, $mensaje, $cabeceras);
+		}
+		return $usuario;
+	}
+	
 	function viajes($request, $conexion)
 	{
 		$viajes = [];
@@ -109,6 +137,29 @@
 			array_push($viajes, $viaje);
 		}
 		return $viajes;
+	}
+	
+	function rechazarViaje($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$chofer = $request->chofer;
+		$chofer_id = $request->chofer_id;
+		$proveedor = $request->proveedor;
+		$query = "UPDATE mab_viajes SET id_chofer = NULL, chofer = NULL WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'PROVEEDOR' AND estado = 'ACTIVO' AND proveedor = '$proveedor' AND id <> '$chofer_id'";
+		$result = mysql_query($query, $conexion);
+		while($prov = mysql_fetch_array($result)){
+			$nombre = $prov["nombre"];
+			$desti = $prov["usuario"];
+			$asunto = "Viaje rechazado desde APP";
+			$mensaje = "Sr. " . $nombre . " el viaje con ID ". $viaje_id ." fue rechazado por el chofer ". $chofer ." <br><br> Muchas gracias. ";
+			$cabeceras = 'MIME-Version: 1.0' . "\r\n";
+			$cabeceras .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+			$cabeceras .= "From: MAB Mobile - Remises <envios@mabmobile.com.ar> \r\n";
+			mail($desti, $asunto, $mensaje, $cabeceras);
+		}
+		return "Exito al rechazar el viaje";
 	}
 	
 	function completarViaje($viaje, $conexion){

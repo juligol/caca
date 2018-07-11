@@ -30,7 +30,7 @@ export class MyApp {
 		// set our app's pages
 		this.pages = [
 		  { title: 'Home', component: Home },
-		  { title: 'Cerrar sesión', component: Logout },
+		  { title: 'Cerrar sesión', component: Logout }
 		];
 	}
 

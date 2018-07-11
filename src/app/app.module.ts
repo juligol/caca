@@ -17,6 +17,7 @@ import { Logout } from '../pages/logout/logout';
 import { Home } from '../pages/home/home';
 import { Viaje } from '../pages/viaje/viaje';
 import { CerrarViaje } from '../pages/cerrar_viaje/cerrar_viaje';
+import { Password } from '../pages/password/password';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { CerrarViaje } from '../pages/cerrar_viaje/cerrar_viaje';
 	Logout,
 	Home,
 	Viaje,
-	CerrarViaje
+	CerrarViaje,
+	Password
   ],
   imports: [
     BrowserModule,
@@ -40,7 +42,8 @@ import { CerrarViaje } from '../pages/cerrar_viaje/cerrar_viaje';
 	Logout,
 	Home,
 	Viaje,
-	CerrarViaje
+	CerrarViaje,
+	Password
   ],
   providers: [
     StatusBar,

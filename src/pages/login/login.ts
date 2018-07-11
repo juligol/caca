@@ -2,10 +2,10 @@ import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { MenuController } from 'ionic-angular';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
-import { AlertController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { GlobalProvider } from "../../providers/global/global";
 import { Home } from '../home/home';
+import { Password } from '../password/password';
 
 @Component({
   selector: 'page-login',
@@ -18,7 +18,6 @@ export class Login {
 	constructor(public navCtrl: NavController, 
 				private formBuilder: FormBuilder,
 				public menuCtrl: MenuController,
-				public alertCtrl: AlertController,
 				private storage: Storage,
 				public global: GlobalProvider){
 					
@@ -49,23 +48,12 @@ export class Login {
 			}
 			else
 			{
-				this.showError("E-mail o contraseña incorrectos!!");
+				this.global.showError("E-mail o contraseña incorrectos!!");
 			}
 		}, 
 		error => {
-			console.log("Oooops!");
-			this.showError('Oooops! Por favor intente de nuevo!');
+			this.global.showError('Oooops! Por favor intente de nuevo!');
 		});
-	}
-	
-	showError(texto) {
-		this.global.loader.dismiss();
-		let alert = this.alertCtrl.create({
-			title: 'Error',
-			subTitle: texto,
-			buttons: ['OK']
-		});
-		alert.present();
 	}
 	
 	public type = 'password';
@@ -77,6 +65,10 @@ export class Login {
 		} else {
 			this.type = 'password';
 		}
+	}
+	
+	olvidoPassword() {
+		this.navCtrl.setRoot(Password);
 	}
   
 }

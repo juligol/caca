@@ -4,6 +4,7 @@ import { NavController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
+import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { Viaje } from '../viaje/viaje';
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
@@ -26,6 +27,7 @@ export class Home{
 				private navCtrl: NavController,
 				private storage: Storage,
 				private diagnostic: Diagnostic,
+				public alertCtrl: AlertController,
 				private locationAccuracy: LocationAccuracy,
 				public global: GlobalProvider){
 				
@@ -69,8 +71,7 @@ export class Home{
 				this.global.loader.dismiss();
 			}, 
 			error => {
-				console.log("Oooops!");
-				this.global.loader.dismiss();
+				this.global.showError("Oooops! Por favor intente de nuevo!");
 			});
 		});
 	}
@@ -156,6 +157,42 @@ export class Home{
 		this.navCtrl.setRoot(CerrarViaje, {viaje: item});
 	}
 	
+	preguntarRechazarViaje(event, item){
+		this.global.loading();
+		let alert = this.alertCtrl.create({
+			title: 'Viaje ' + item.id,
+			message: 'Desea rechazar este viaje?',
+			buttons: [
+			{
+				text: 'Cancelar',
+				role: 'cancel',
+				handler: () => {
+					this.global.loader.dismiss();
+				}
+			},
+			{
+				text: 'Aceptar',
+				handler: () => {
+					this.rechazarViaje(event, item);
+				}
+			}
+			]
+		});
+		alert.present();
+	}
+	
+	rechazarViaje(event, item) {
+		this.storage.get('user').then((user) => {
+			var myData = JSON.stringify({action: "rechazarViaje", viaje_id: item.id, chofer_id: user.id, chofer: user.nombre, proveedor: user.proveedor});
+			this.global.http.post(this.global.link, myData).subscribe(data => {
+				this.cargarViajes();
+			}, 
+			error => {
+				this.global.showError("Oooops! Por favor intente de nuevo!");
+			});
+		});
+	}
+	
 	verRecorrido(event, item) {
 		this.global.loading();
 		//this.verificarGPS(event, item);
@@ -168,13 +205,15 @@ export class Home{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.presentError("Error desde el request true")
+					error => this.global.loader.dismiss()
+					//error => console.log("Error desde el request true")
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.presentError("Error desde el request false")
+					error => this.global.loader.dismiss()
+					//error => console.log("Error desde el request false")
 				);
 			}
 		});
@@ -182,10 +221,5 @@ export class Home{
 	
 	irAlViaje(item){
 		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
-	}
-	
-	presentError(mensaje) {
-		this.global.loader.dismiss();
-		console.log(mensaje);
 	}
 }
