@@ -68,12 +68,34 @@ export class Viaje {
 		let latitude = position.coords.latitude;
 		let longitude = position.coords.longitude;
 		
+		//Posicion vieja
+		let posicionVieja = this.myLatLng;
+		if(estoyIniciando){
+			posicionVieja = {lat: latitude, lng: longitude};
+		}
+		//Posicion nueva
+		this.myLatLng = {lat: latitude, lng: longitude};
+		
+		if(!estoyIniciando){
+			console.log(posicionVieja);
+			console.log(this.myLatLng);
+		}
+		
+		let distancia = this.calcularDistanciaEntre(posicionVieja.lat, this.myLatLng.lat, posicionVieja.lng, this.myLatLng.lng);
+		if(distancia > 0){
+			var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: latitude, longitud: longitude, distancia: distancia});
+			this.global.http.post(this.global.link, myData).subscribe(data => {
+				var dist = parseFloat(data["_body"]);
+				console.log("Distancia parcial guardada: " + dist + " Km");
+			}, 
+			error => {
+				this.global.showError("Oooops! Por favor intente de nuevo!");
+			});
+		}
+		
 		// create a new map by passing HTMLElement
 		let mapEle: HTMLElement = document.getElementById('map');
 		let panelEle: HTMLElement = document.getElementById('panel');
-
-		// New location
-		this.myLatLng = {lat: latitude, lng: longitude};
 
 		if(estoyIniciando){
 			// create map
@@ -122,7 +144,7 @@ export class Viaje {
 		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			//5 minutos son 300000 ms;
-			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 120000);
+			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 10000);
 			this.global.intervalos[this.viajeActual.id] = this.interval;
 			this.viajeActual.en_proceso = 1;
 			this.viajeIniciado = true;
@@ -134,24 +156,9 @@ export class Viaje {
 	
 	guardarPosicionActual(estaClase) {
 		var options = {enableHighAccuracy: true};
-		navigator.geolocation.getCurrentPosition(function (position) {
-			let latitud = position.coords.latitude;
-			let longitud = position.coords.longitude;
-			let miPosicionActual = {lat: latitud, lng: longitud};
-			//Posicion vieja
-			console.log(estaClase.myLatLng);
-			//Posicion nueva
-			console.log(miPosicionActual);
-			let distancia = estaClase.calcularDistanciaEntre(estaClase.myLatLng.lat, miPosicionActual.lat, estaClase.myLatLng.lng, miPosicionActual.lng);
+		//navigator.geolocation.getCurrentPosition(function (position) {
+		estaClase.geolocation.getCurrentPosition().then(position => {
 			estaClase.loadMap(position, false);
-			var myData = JSON.stringify({action: "posicionActual", viaje_id: estaClase.viajeActual.id, latitud: latitud, longitud: longitud, distancia: distancia});
-			estaClase.global.http.post(estaClase.global.link, myData).subscribe(data => {
-				var dist = parseFloat(data["_body"]);
-				console.log("Distancia parcial guardada: " + dist + " Km");
-			}, 
-			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
-			});
 		}, 
 		function (error) {
 			this.global.showError("No se pudo obtener su ubicación actual!");
