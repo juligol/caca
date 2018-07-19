@@ -60,7 +60,7 @@ export class Viaje {
 		this.geolocation.getCurrentPosition().then(response => {
 			this.loadMap(response, true);
 		}).catch(error =>{
-			console.log(error);
+			this.global.showError("No se pudo obtener su ubicación actual!");
 		});
 	}
   
@@ -144,7 +144,7 @@ export class Viaje {
 		var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			//5 minutos son 300000 ms;
-			this.interval = window.setInterval(this.guardarPosicionActual.bind(null, this), 10000);
+			this.interval = setInterval(() => {this.guardarPosicionActual();}, 120000);
 			this.global.intervalos[this.viajeActual.id] = this.interval;
 			this.viajeActual.en_proceso = 1;
 			this.viajeIniciado = true;
@@ -154,15 +154,12 @@ export class Viaje {
 		});
 	}
 	
-	guardarPosicionActual(estaClase) {
-		var options = {enableHighAccuracy: true};
-		//navigator.geolocation.getCurrentPosition(function (position) {
-		estaClase.geolocation.getCurrentPosition().then(position => {
-			estaClase.loadMap(position, false);
-		}, 
-		function (error) {
+	guardarPosicionActual() {
+		this.geolocation.getCurrentPosition().then(response => {
+			this.loadMap(response, false);
+		}).catch(error =>{
 			this.global.showError("No se pudo obtener su ubicación actual!");
-		}, options);
+		});
 	}
 	
 	calcularDistanciaEntre(lat1:number, lat2:number, long1:number, long2:number){
@@ -198,9 +195,9 @@ export class Viaje {
 	
 	detenerViaje() {
 		this.global.loading();
-		window.clearInterval(this.global.intervalos[this.viajeActual.id]);
+		clearInterval(this.global.intervalos[this.viajeActual.id]);
 		this.global.intervalos[this.viajeActual.id] = null;
-		this.guardarPosicionActual(this);
+		this.guardarPosicionActual();
 		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			var distancia = parseFloat(data["_body"]);
@@ -233,7 +230,6 @@ export class Viaje {
 			this.viajeActual.en_proceso = 0;
 			this.viajeIniciado = false;
 			this.cargando = true;
-			//this.callback({viaje: this.viajeActual, cargando: this.cargando});
 			this.global.loader.dismiss();
 		}, 
 		error => {
