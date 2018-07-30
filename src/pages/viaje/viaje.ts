@@ -4,6 +4,7 @@ import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
+
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 import { Home } from '../home/home';
 

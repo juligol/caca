@@ -10,10 +10,10 @@
 				<ion-row>
 					<ion-col>
 						<ion-item>
-							<ion-input type="text" formControlName="email" value="jpromerom@hotmail.com" placeholder="E-mail" required></ion-input>
+							<ion-input type="text" formControlName="email" placeholder="E-mail" required></ion-input>
 						</ion-item>
 						<ion-item>
-							<ion-input type="{{type}}" value="racing555" formControlName="password" placeholder="Password" required></ion-input>
+							<ion-input type="{{type}}" formControlName="password" placeholder="Password" required></ion-input>
 							<button *ngIf="!showPass" ion-button clear type="button" item-right (click)="showPassword()"> 
 								<ion-icon name="ios-eye-off-outline"></ion-icon>
 							</button>

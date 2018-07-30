@@ -10,6 +10,7 @@ import { IonicStorageModule } from '@ionic/storage';
 import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { GlobalProvider } from '../providers/global/global';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 //------------------------------Pages----------------------------------------
 import { Login } from '../pages/login/login';
@@ -52,7 +53,8 @@ import { Password } from '../pages/password/password';
     {provide: ErrorHandler, useClass: IonicErrorHandler},
 	Diagnostic,
 	LocationAccuracy,
-    GlobalProvider
+    GlobalProvider,
+	BackgroundMode
   ]
 })
 
