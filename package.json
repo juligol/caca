@@ -68,7 +68,9 @@
       "cordova-plugin-splashscreen": {},
       "cordova-plugin-ionic-webview": {},
       "cordova-plugin-ionic-keyboard": {},
-      "cordova-plugin-geolocation": {},
+      "cordova-plugin-geolocation": {
+        "GEOLOCATION_USAGE_DESCRIPTION": "To track your walks"
+      },
       "cordova-sqlite-storage": {},
       "cordova.plugins.diagnostic": {},
       "cordova-plugin-request-location-accuracy": {},

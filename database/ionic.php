@@ -61,8 +61,8 @@
 					$res = viajes($request, $conexion);
 					echo json_encode($res);
 					break;
-				case 'posicionActual':
-					$res = posicionActual($request, $conexion);
+				case 'guardarDirecciones':
+					$res = guardarDirecciones($request, $conexion);
 					echo $res;
 					break;
 				case 'distanciaTotal':
@@ -217,19 +217,24 @@
 		return $viaje;
 	}
 	
-	function posicionActual($request, $conexion)
+	function guardarDirecciones($request, $conexion)
 	{
 		$viaje_id = $request->viaje_id;
-		$latitud = $request->latitud;
-        $longitud = $request->longitud;
-        $distancia = $request->distancia;
-		$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitud', '$distancia', NOW())";
-		$result = mysql_query($query, $conexion);
-		if($distancia == 0){
-			$query = "UPDATE mab_viajes SET en_proceso = 1 WHERE id = " . $viaje_id;
+		$distancias = explode('|', $request->distancias);
+		$latitudes = explode('|', $request->latitudes);
+		$longitudes = explode('|', $request->longitudes);
+        $distanciaTotal = 0;
+		$i = 0;
+		foreach($latitudes as $latitud)
+		{
+			$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitudes[$i]', '$distancias[$i]', NOW())";
 			$result = mysql_query($query, $conexion);
+			$distanciaTotal += $distancias[$i];
+			$i++;
 		}
-		return $distancia;
+		$query = "UPDATE mab_viajes SET en_proceso = 1, distancia_total_recorrida = '$distanciaTotal' WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return $distanciaTotal;
 	}
 	
 	function distanciaTotal($request, $conexion)
