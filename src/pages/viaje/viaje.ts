@@ -342,7 +342,14 @@ export class Viaje {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.cargando = true;
-			this.currentMapTrack.setMap(null);
+			this.trackedRoute = [];
+			this.distancias = [];
+			this.latitudes = [];
+			this.longitudes = [];
+			this.fechas = [];
+			this.primeraVez = true;
+			this.isTracking = false;
+			//this.currentMapTrack.setMap(null);
 			this.global.loader.dismiss();
 		}, 
 		error => {
