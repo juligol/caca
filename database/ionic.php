@@ -223,17 +223,20 @@
 		$distancias = explode('|', $request->distancias);
 		$latitudes = explode('|', $request->latitudes);
 		$longitudes = explode('|', $request->longitudes);
+		$fechas = explode('|', $request->fechas);
         $distanciaTotal = 0;
 		$i = 0;
 		foreach($latitudes as $latitud)
 		{
-			$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitudes[$i]', '$distancias[$i]', NOW())";
+			$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitudes[$i]', '$distancias[$i]', '$fechas[$i]')";
 			$result = mysql_query($query, $conexion);
 			$distanciaTotal += $distancias[$i];
 			$i++;
 		}
-		$query = "UPDATE mab_viajes SET en_proceso = 1, distancia_total_recorrida = '$distanciaTotal' WHERE id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
+		if($distanciaTotal > 0){
+			$query = "UPDATE mab_viajes SET en_proceso = 1, distancia_total_recorrida = '$distanciaTotal' WHERE id = " . $viaje_id;
+			$result = mysql_query($query, $conexion);
+		}
 		return $distanciaTotal;
 	}
 	

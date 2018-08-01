@@ -31,12 +31,16 @@ export class Viaje {
 	viajeIniciado: Boolean = false;
 	cargando: Boolean = true;
 	
+	fecha: any;
 	currentMapTrack = null;
 	isTracking = false;
+	primeraVez = true;
+	ultimaVez = true;
 	trackedRoute = [];
 	distancias = [];
 	latitudes = [];
 	longitudes = [];
+	fechas = [];
 	previousTracks = [];
 	positionSubscription: Subscription;
 
@@ -72,6 +76,7 @@ export class Viaje {
 		this.plt.ready().then(() => {
 			this.geolocation.getCurrentPosition().then(pos => {
 				this.myLatLng = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+				this.fecha = this.getFechaActual();
 				// create a new map by passing HTMLElement
 				let mapEle: HTMLElement = document.getElementById('map');
 				let panelEle: HTMLElement = document.getElementById('panel');
@@ -92,6 +97,11 @@ export class Viaje {
 				console.log('Error getting location', error);
 			});
 		});
+	}
+	
+	getFechaActual(){
+		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
+		return new Date(Date.now() - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
   
 	getPosition():any{
@@ -179,23 +189,14 @@ export class Viaje {
 	}
 	
 	comenzarViaje() {
-		/*var myData = JSON.stringify({action: "posicionActual", viaje_id: this.viajeActual.id, latitud: this.myLatLng.lat, longitud: this.myLatLng.lng, distancia: 0});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			//5 minutos son 300000 ms;
-			this.interval = setInterval(() => {this.guardarPosicionActual();}, 120000);
-			this.global.intervalos[this.viajeActual.id] = this.interval;
-			this.viajeActual.en_proceso = 1;
-			this.viajeIniciado = true;
-		}, 
-		error => {
-			this.global.showError("Oooops! Por favor intente de nuevo!");
-		});*/
 		this.viajeActual.en_proceso = 1;
 		this.isTracking = true;
 		this.trackedRoute = [];
 		this.distancias = [];
 		this.latitudes = [];
 		this.longitudes = [];
+		this.fechas = [];
+		this.primeraVez = true;
 		let options = {timeout : 120000, enableHighAccuracy: true};
 		this.positionSubscription = this.geolocation.watchPosition(options)
 			.pipe(
@@ -203,20 +204,29 @@ export class Viaje {
 			)
 			.subscribe(data => {
 				setTimeout(() => {
-					let posicionVieja = this.myLatLng;
-					this.myLatLng = {lat: data.coords.latitude, lng: data.coords.longitude};
-					let distancia = this.calcularDistanciaEntre(posicionVieja.lat, this.myLatLng.lat, posicionVieja.lng, this.myLatLng.lng);
-					console.log(posicionVieja);
-					console.log(this.myLatLng);
-					if(distancia > 0){
-						this.trackedRoute.push(this.myLatLng);
-						this.distancias.push(distancia);
+					let latitudNueva = data.coords.latitude;
+					let longitudNueva = data.coords.longitude;
+					let posicionNueva = {lat: latitudNueva, lng: longitudNueva};
+					let fechaNueva = this.getFechaActual();
+					let distancia = this.calcularDistanciaEntre(this.myLatLng.lat, latitudNueva, this.myLatLng.lng, longitudNueva);
+					let tiempo = this.calcularTiempoEntre(this.fecha, fechaNueva);
+					if(this.primeraVez || (distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/)){
+						console.log(distancia);
+						console.log(tiempo);
+						this.fecha = fechaNueva;
+						this.myLatLng = posicionNueva;
+						this.fechas.push(this.fecha);
+						if(this.primeraVez)
+							this.distancias.push(0);
+						else
+							this.distancias.push(distancia);
 						this.latitudes.push(this.myLatLng.lat);
 						this.longitudes.push(this.myLatLng.lng);
-						this.redrawPath(this.trackedRoute);
-						this.marker.setPosition(this.myLatLng);
-						console.log(distancia);
+						this.primeraVez = false;
 					}
+					this.trackedRoute.push(posicionNueva);
+					this.redrawPath(this.trackedRoute);
+					this.marker.setPosition(posicionNueva);
 				}, 0);
 			});
 	}
@@ -254,6 +264,14 @@ export class Viaje {
 		return dis;
 	}
 	
+	calcularTiempoEntre(fechaVieja, fechaNueva){
+		var fechaInicio = new Date(fechaVieja).getTime();
+		var fechaFin    = new Date(fechaNueva).getTime();
+		var diff = fechaFin - fechaInicio;
+		// (1000*60*60*24) --> milisegundos -> segundos -> minutos -> horas -> días
+		return ( diff/(1000*60) ); // para devolver en minutos
+	}
+	
 	finalizarViaje() {
 		let alert = this.alertCtrl.create({
 			title: 'Viaje ' + this.viajeActual.id,
@@ -281,58 +299,41 @@ export class Viaje {
 		this.global.loading();
 		this.isTracking = false;
 		this.positionSubscription.unsubscribe();
-		if (this.trackedRoute.length > 1 && this.trackedRoute.length == this.distancias.length) {
-			//this.currentMapTrack.setMap(null);
-			var latitudess = this.latitudes.join('|');
-			var longitudess = this.longitudes.join('|');
-			var distanciass = this.distancias.join('|');
-			var myData = JSON.stringify({action: "guardarDirecciones", viaje_id: this.viajeActual.id, latitudes: latitudess, longitudes: longitudess, distancias: distanciass});
-			this.global.http.post(this.global.link, myData).subscribe(data => {
-				if(this.viajeActual.fechaValida){
-					this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
-					this.cargando = true;
-				}
-				else{
-					this.navCtrl.setRoot(Home);
-					this.cargando = false;
-				}
-			}, 
-			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
-			});
-		}else{
-			this.viajeActual.en_proceso = 0;
-			this.cargando = true;
-			this.global.loader.dismiss();
-		}
-		
-		/*this.global.loading();
-		clearInterval(this.global.intervalos[this.viajeActual.id]);
-		this.global.intervalos[this.viajeActual.id] = null;
-		this.guardarPosicionActual();
-		var myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viajeActual.id});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			var distancia = parseFloat(data["_body"]);
-			console.log("Distancia total recorrida: " + distancia + " Km");
-			if(distancia > 0)
-			{
-				if(this.viajeActual.fechaValida){
-					this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
-					this.cargando = true;
-				}
-				else{
-					this.navCtrl.setRoot(Home);
-					this.cargando = false;
-				}
+		this.geolocation.getCurrentPosition().then(pos => {
+			let latitudNueva = pos.coords.latitude;
+			let longitudNueva = pos.coords.longitude;
+			let posicionNueva = {lat: latitudNueva, lng: longitudNueva};
+			let fechaNueva = this.getFechaActual();
+			let distancia = this.calcularDistanciaEntre(this.myLatLng.lat, latitudNueva, this.myLatLng.lng, longitudNueva);
+			this.fechas.push(fechaNueva);
+			this.distancias.push(distancia);
+			this.latitudes.push(latitudNueva);
+			this.longitudes.push(longitudNueva);
+			if (this.distancias.length > 2 && this.distancias.length == this.latitudes.length && this.latitudes.length == this.longitudes.length && this.longitudes.length == this.fechas.length) {
+				let latitudess = this.latitudes.join('|');
+				let longitudess = this.longitudes.join('|');
+				let distanciass = this.distancias.join('|');
+				let fechass = this.fechas.join('|');
+				let myData = JSON.stringify({action: "guardarDirecciones", viaje_id: this.viajeActual.id, latitudes: latitudess, longitudes: longitudess, distancias: distanciass, fechas: fechass});
+				this.global.http.post(this.global.link, myData).subscribe(data => {
+					if(this.viajeActual.fechaValida){
+						this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+						this.cargando = true;
+					}
+					else{
+						this.navCtrl.setRoot(Home);
+						this.cargando = false;
+					}
+				}, 
+				error => {
+					this.global.showError("Oooops! Por favor intente de nuevo!");
+				});
+			}else{
+				this.reiniciarViaje();
 			}
-			else
-			{
-				setTimeout(() => {this.reiniciarViaje();}, 1000);
-			}
-		}, 
-		error => {
-			this.global.showError("Oooops! Por favor intente de nuevo!");
-		});*/
+		}).catch((error) => {
+			console.log('Error getting location', error);
+		});
 	}
 	
 	reiniciarViaje(){
@@ -340,8 +341,8 @@ export class Viaje {
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
-			this.viajeIniciado = false;
 			this.cargando = true;
+			this.currentMapTrack.setMap(null);
 			this.global.loader.dismiss();
 		}, 
 		error => {
