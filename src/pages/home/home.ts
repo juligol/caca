@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MenuController } from 'ionic-angular';
 import { NavController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
-import { Diagnostic } from '@ionic-native/diagnostic';
+//import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
@@ -26,7 +26,7 @@ export class Home{
 	constructor(public menuCtrl: MenuController, 
 				private navCtrl: NavController,
 				private storage: Storage,
-				private diagnostic: Diagnostic,
+				//private diagnostic: Diagnostic,
 				public alertCtrl: AlertController,
 				private locationAccuracy: LocationAccuracy,
 				public global: GlobalProvider){

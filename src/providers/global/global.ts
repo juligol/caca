@@ -2,18 +2,25 @@ import { Injectable } from '@angular/core';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
+import { Subscription } from 'rxjs/Subscription';
 
 @Injectable()
 export class GlobalProvider {
 	public loader: any;
 	public link: string;
 	public intervalos = [];
-	public fecha_global: any;
-	public rutas_global 		= [];
-	public distancias_global	= [];
-	public latitudes_global 	= [];
-	public longitudes_global 	= [];
-	public fechas_global 		= [];
+	public fecha: any;
+	public markers		= [];
+	public ultima_fecha	= [];
+	public fechas 		= [];
+	//public rutas 		= [];
+	public posiciones 	= [];
+	public latitudes 	= [];
+	public longitudes 	= [];
+	public distancias	= [];
+	public primeraVez: Array<Boolean> = [];
+	public subscriptions: Array<Subscription> = [];
+	
 	constructor(public loadingCtrl: LoadingController,
 				public alertCtrl: AlertController,
 				public http: Http) {
@@ -47,5 +54,10 @@ export class GlobalProvider {
 			buttons: ['OK']
 		});
 		alert.present();
+	}
+	
+	getFechaActual(){
+		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
+		return new Date(Date.now() - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
 }
