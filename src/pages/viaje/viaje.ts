@@ -68,8 +68,13 @@ export class Viaje {
 					this.inicializarArrays();
 					this.global.markers[this.id].setPosition(posicion_actual);
 				}else{
-					//dibujo el trayecto que estaba
-					//this.redrawPath(this.global.rutas[this.id]);
+					if(this.viajeActual.distancia_total_recorrida == 0){
+						//dibujo el trayecto que estaba
+						this.global.subscriptions[this.id].unsubscribe();
+						this.comenzarViaje();
+					}else{
+						this.redrawPath(this.armarTrayecto());
+					}
 				}
 				this.mostrarRutaEntre(this.viajeActual.origen, this.viajeActual.destino);
 			}).catch((error) => {
@@ -81,7 +86,7 @@ export class Viaje {
 	
 	inicializarArrays(){
 		this.global.fechas[this.id] = [];
-		//this.global.rutas[this.id] = [];
+		this.global.rutas[this.id] = [];
 		this.global.posiciones[this.id] = null;
 		this.global.ultima_fecha[this.id] = null;
 		this.global.latitudes[this.id] = [];
@@ -107,6 +112,16 @@ export class Viaje {
 		});  
 	}
 	
+	armarTrayecto(){
+		let puntos_trayecto = this.viajeActual.puntos_trayecto;
+		var trayecto = [];
+		//console.log(puntos_trayecto);
+		for (var i = 0; i < puntos_trayecto.length; i++) {
+			trayecto.push({lat: Number(puntos_trayecto[i].latitud), lng: Number(puntos_trayecto[i].longitud)});
+		}
+		return trayecto;
+	}
+	
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
 		//let options = {timeout : 120000, enableHighAccuracy: true};
@@ -129,8 +144,8 @@ export class Viaje {
 							this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
 						}
 					}
-					//this.global.rutas[this.id].push(posicionNueva);
-					//this.redrawPath(this.global.rutas[this.id]);
+					this.global.rutas[this.id].push(posicionNueva);
+					this.redrawPath(this.global.rutas[this.id]);
 					this.global.markers[this.id].setPosition(posicionNueva);
 				}, 0);
 			});
@@ -145,7 +160,7 @@ export class Viaje {
 		this.global.distancias[this.id].push(distancia);
 	}
 	
-	/*redrawPath(path) {
+	redrawPath(path) {
 		if (this.currentMapTrack) {
 		  this.currentMapTrack.setMap(null);
 		}
@@ -159,7 +174,7 @@ export class Viaje {
 		  });
 		  this.currentMapTrack.setMap(this.map);
 		}
-	}*/
+	}
 	
 	calcularDistanciaEntre(lat1:number, lat2:number, long1:number, long2:number){
 		let p = 0.017453292519943295;    // Math.PI / 180

@@ -73,6 +73,10 @@
 					$res = rechazarViaje($request, $conexion);
 					echo $res;
 					break;
+				case 'viaje_en_proceso':
+					$res = viaje_en_proceso($request, $conexion);
+					echo $res;
+					break;
 				case 'reiniciarViaje':
 					$res = reiniciarViaje($request, $conexion);
 					echo $res;
@@ -213,6 +217,14 @@
 		$datetime2 = new DateTime($viaje["fecha"] . " " . $viaje["hora"]);
 		$interval = $datetime2->diff($datetime1);
 		$viaje["fechaValida"] = $interval->format('%R%a') >= 0;
+		//Trayectoria
+		$puntos_trayecto = [];
+		$sqlTra = "SELECT * FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje["id"];
+		$result = mysql_query($sqlTra, $conexion);
+		while($punto = mysql_fetch_array($result)){
+			array_push($puntos_trayecto, $punto);
+		}
+		$viaje["puntos_trayecto"] = $puntos_trayecto;
 
 		return $viaje;
 	}
@@ -259,6 +271,14 @@
 		$viaje = mysql_fetch_array($result);
 		$viaje = completarViaje($viaje, $conexion);
 		return $viaje;
+	}
+	
+	function viaje_en_proceso($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$query = "UPDATE mab_viajes SET en_proceso = 1 WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return "Exito al poner el viaje en proceso";
 	}
 
 	function reiniciarViaje($request, $conexion)

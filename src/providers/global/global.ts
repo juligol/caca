@@ -13,7 +13,7 @@ export class GlobalProvider {
 	public markers		= [];
 	public ultima_fecha	= [];
 	public fechas 		= [];
-	//public rutas 		= [];
+	public rutas 		= [];
 	public posiciones 	= [];
 	public latitudes 	= [];
 	public longitudes 	= [];
