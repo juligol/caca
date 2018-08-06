@@ -5,6 +5,7 @@ import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
 import { filter } from 'rxjs/operators';
+import { BackgroundMode } from '@ionic-native/background-mode';
 
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 import { Home } from '../home/home';
@@ -35,14 +36,16 @@ export class Viaje {
 				public alertCtrl: AlertController,
 				public global: GlobalProvider,
 				public menuCtrl: MenuController,
-				private plt: Platform) {
+				private plt: Platform,
+				private backgroundMode: BackgroundMode) {
 					
 		this.menuCtrl.enable(false);
 					
 		this.viajeActual = navParams.get('item');
 		this.id = this.viajeActual.id;
 		this.directionsService = new google.maps.DirectionsService();
-		this.directionsDisplay = new google.maps.DirectionsRenderer();
+		this.directionsDisplay = new google.maps.DirectionsRenderer
+		this.backgroundMode.enable();
 	}
 	
 	ionViewWillEnter() {
@@ -224,6 +227,7 @@ export class Viaje {
 			let fechaNueva = this.global.getFechaActual();
 			let distancia = this.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
+			this.global.showSuccess(this.global.distancias[this.id].length);
 			if (this.global.distancias[this.id].length > 2 && this.global.distancias[this.id].length == this.global.latitudes[this.id].length && 
 				this.global.latitudes[this.id].length == this.global.longitudes[this.id].length && this.global.longitudes[this.id].length == this.global.fechas[this.id].length) {
 				let latitudess = this.global.latitudes[this.id].join('|'); 

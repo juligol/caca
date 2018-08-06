@@ -60,4 +60,9 @@ export class GlobalProvider {
 		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
 		return new Date(Date.now() - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
+	
+	getFecha(fecha){
+		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
+		return new Date(fecha - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
+	}
 }
