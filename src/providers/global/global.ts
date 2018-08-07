@@ -13,13 +13,14 @@ export class GlobalProvider {
 	public markers		= [];
 	public ultima_fecha	= [];
 	public fechas 		= [];
-	public rutas 		= [];
+	//public rutas 		= [];
 	public posiciones 	= [];
 	public latitudes 	= [];
 	public longitudes 	= [];
 	public distancias	= [];
 	public primeraVez: Array<Boolean> = [];
 	public subscriptions: Array<Subscription> = [];
+	public tzoffset;
 	
 	constructor(public loadingCtrl: LoadingController,
 				public alertCtrl: AlertController,
@@ -27,6 +28,7 @@ export class GlobalProvider {
 					
 		this.link = 'http://mab.doublepoint.com.ar/config/ionic.php';
 		this.http = http;
+		this.tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
 	}
 	
 	loading(){
@@ -57,12 +59,10 @@ export class GlobalProvider {
 	}
 	
 	getFechaActual(){
-		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
-		return new Date(Date.now() - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
+		return new Date(Date.now() - this.tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
 	
-	getFecha(fecha){
-		var tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
-		return new Date(fecha - tzoffset).toISOString().slice(0, -1).replace('T', ' ');
+	getFecha(fecha){ 
+		return new Date(fecha - this.tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
 }

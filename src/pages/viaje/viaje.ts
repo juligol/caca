@@ -79,7 +79,7 @@ export class Viaje {
 						this.global.subscriptions[this.id].unsubscribe();
 						this.comenzarViaje();
 					}else{
-						this.redrawPath(this.armarTrayecto());
+						//this.redrawPath(this.armarTrayecto());
 					}
 				}
 				this.mostrarRutaEntre(this.viajeActual.origen, this.viajeActual.destino);
@@ -92,7 +92,7 @@ export class Viaje {
 	
 	inicializarArrays(){
 		this.global.fechas[this.id] = [];
-		this.global.rutas[this.id] = [];
+		//this.global.rutas[this.id] = [];
 		this.global.posiciones[this.id] = null;
 		this.global.ultima_fecha[this.id] = null;
 		this.global.latitudes[this.id] = [];
@@ -135,10 +135,10 @@ export class Viaje {
 			.pipe(
 				filter((p) => p.coords !== undefined) //Filter Out Errors
 			)
-			.subscribe(data => {
+			.subscribe(posicion => {
 				setTimeout(() => {
-					let posicionNueva = {lat: data.coords.latitude, lng: data.coords.longitude};
-					let fechaNueva = this.global.getFechaActual();
+					let posicionNueva = {lat: posicion.coords.latitude, lng: posicion.coords.longitude};
+					let fechaNueva = this.global.getFecha(posicion.timestamp);
 					if(this.global.primeraVez[this.id]){
 						this.guardarEnArrays(fechaNueva, posicionNueva, 0);
 						this.global.primeraVez[this.id] = false;
@@ -150,8 +150,8 @@ export class Viaje {
 							this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
 						}
 					}
-					this.global.rutas[this.id].push(posicionNueva);
-					this.redrawPath(this.global.rutas[this.id]);
+					//this.global.rutas[this.id].push(posicionNueva);
+					//this.redrawPath(this.global.rutas[this.id]);
 					this.global.markers[this.id].setPosition(posicionNueva);
 				}, 0);
 			});
@@ -166,7 +166,7 @@ export class Viaje {
 		this.global.distancias[this.id].push(distancia);
 	}
 	
-	redrawPath(path) {
+	/*redrawPath(path) {
 		if (this.currentMapTrack) {
 		  this.currentMapTrack.setMap(null);
 		}
@@ -180,7 +180,7 @@ export class Viaje {
 		  });
 		  this.currentMapTrack.setMap(this.map);
 		}
-	}
+	}*/
 	
 	calcularDistanciaEntre(lat1:number, lat2:number, long1:number, long2:number){
 		let p = 0.017453292519943295;    // Math.PI / 180
@@ -227,10 +227,10 @@ export class Viaje {
 		this.geolocation.getCurrentPosition().then(pos => {
 			let posicionVieja = this.global.posiciones[this.id];
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			let fechaNueva = this.global.getFechaActual();
+			let fechaNueva = this.global.getFecha(pos.timestamp);
 			let distancia = this.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
-			this.global.showSuccess(this.global.distancias[this.id].length);
+			//this.global.showSuccess(this.global.distancias[this.id].length);
 			if (this.global.distancias[this.id].length > 2 && this.global.distancias[this.id].length == this.global.latitudes[this.id].length && 
 				this.global.latitudes[this.id].length == this.global.longitudes[this.id].length && this.global.longitudes[this.id].length == this.global.fechas[this.id].length) {
 				let latitudess = this.global.latitudes[this.id].join('|'); 
