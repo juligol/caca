@@ -5,7 +5,7 @@ import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
 import { filter } from 'rxjs/operators';
-import { BackgroundMode } from '@ionic-native/background-mode';
+import { Insomnia } from '@ionic-native/insomnia';
 
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 import { Home } from '../home/home';
@@ -37,7 +37,7 @@ export class Viaje {
 				public global: GlobalProvider,
 				public menuCtrl: MenuController,
 				private plt: Platform,
-				private backgroundMode: BackgroundMode) {
+				private insomnia: Insomnia) {
 					
 		this.menuCtrl.enable(false);
 					
@@ -45,7 +45,10 @@ export class Viaje {
 		this.id = this.viajeActual.id;
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer
-		this.backgroundMode.enable();
+		this.insomnia.keepAwake().then(
+			() => console.log('success'),
+			() => console.log('error')
+		);
 	}
 	
 	ionViewWillEnter() {

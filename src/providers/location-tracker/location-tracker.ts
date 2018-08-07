@@ -1,4 +1,4 @@
-import { Injectable, NgZone } from '@angular/core';
+/*import { Injectable, NgZone } from '@angular/core';
 import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocationResponse } from '@ionic-native/background-geolocation';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import 'rxjs/add/operator/filter';
@@ -43,7 +43,7 @@ export class LocationTracker {
 			enableHighAccuracy: true
 		};*/
 		 
-		this.global.subscriptions[id] = this.geolocation.watchPosition(/* options */).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
+		/*this.global.subscriptions[id] = this.geolocation.watchPosition().filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
 			this.zone.run(() => {
 				this.verPosicion(id, position, currentMapTrack, map);
 			});
@@ -60,7 +60,7 @@ export class LocationTracker {
 			let posicionVieja = this.global.posiciones[id];
 			let distancia = this.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			let tiempo = this.calcularTiempoEntre(this.global.ultima_fecha[id], fechaNueva);
-			if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
+			if(distancia > 0 && tiempo >= 2){
 				this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
 			}
 		}
@@ -126,4 +126,4 @@ export class LocationTracker {
 		this.global.subscriptions[id].unsubscribe();
 	}
  
-}
+}*/

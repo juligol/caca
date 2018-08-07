@@ -8,7 +8,6 @@ import { AlertController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { Viaje } from '../viaje/viaje';
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
-import { BackgroundMode } from '@ionic-native/background-mode';
 
 @Component({
   selector: 'page-home',
@@ -30,16 +29,13 @@ export class Home{
 				//private diagnostic: Diagnostic,
 				public alertCtrl: AlertController,
 				private locationAccuracy: LocationAccuracy,
-				public global: GlobalProvider,
-				private backgroundMode: BackgroundMode){
+				public global: GlobalProvider){
 				
 		this.menuCtrl.enable(true);
 		
 		this.storage.get('user').then((val) => {
 			console.log('Hola ' + val.nombre);
 		});
-		
-		this.backgroundMode.enable();
 		
 		this.cargarViajes();
 		
