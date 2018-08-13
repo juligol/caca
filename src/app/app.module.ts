@@ -12,6 +12,7 @@ import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { GlobalProvider } from '../providers/global/global';
 import { BackgroundMode } from '@ionic-native/background-mode';
 import { Insomnia } from '@ionic-native/insomnia';
+import { LocalNotifications } from '@ionic-native/local-notifications';
 
 //------------------------------Pages----------------------------------------
 import { Login } from '../pages/login/login';
@@ -56,7 +57,8 @@ import { Password } from '../pages/password/password';
 	LocationAccuracy,
     GlobalProvider,
 	BackgroundMode,
-	Insomnia
+	Insomnia,
+	LocalNotifications
   ]
 })
 

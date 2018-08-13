@@ -6,6 +6,8 @@ import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
 import { filter } from 'rxjs/operators';
 import { Insomnia } from '@ionic-native/insomnia';
+import { BackgroundMode } from '@ionic-native/background-mode';
+import { LocalNotifications } from '@ionic-native/local-notifications';
 
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 import { Home } from '../home/home';
@@ -37,7 +39,9 @@ export class Viaje {
 				public global: GlobalProvider,
 				public menuCtrl: MenuController,
 				private plt: Platform,
-				private insomnia: Insomnia) {
+				private insomnia: Insomnia,
+				public backgroundMode: BackgroundMode,
+				private localNotifications: LocalNotifications) {
 					
 		this.menuCtrl.enable(false);
 					
@@ -131,30 +135,44 @@ export class Viaje {
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
 		//let options = {timeout : 120000, enableHighAccuracy: true};
-		this.global.subscriptions[this.id] = this.geolocation.watchPosition(/*options*/)
-			.pipe(
-				filter((p) => p.coords !== undefined) //Filter Out Errors
-			)
-			.subscribe(posicion => {
-				setTimeout(() => {
-					let posicionNueva = {lat: posicion.coords.latitude, lng: posicion.coords.longitude};
-					let fechaNueva = this.global.getFecha(posicion.timestamp);
-					if(this.global.primeraVez[this.id]){
-						this.guardarEnArrays(fechaNueva, posicionNueva, 0);
-						this.global.primeraVez[this.id] = false;
-					}else{
-						let posicionVieja = this.global.posiciones[this.id];
-						let distancia = this.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
-						let tiempo = this.calcularTiempoEntre(this.global.ultima_fecha[this.id], fechaNueva);
-						if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
-							this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
+		//this.backgroundMode.on('activate').subscribe(() => {
+			this.global.subscriptions[this.id] = this.geolocation.watchPosition(/*options*/)
+				.pipe(
+					filter((p) => p.coords !== undefined) //Filter Out Errors
+				)
+				.subscribe(posicion => {
+					setTimeout(() => {
+						let posicionNueva = {lat: posicion.coords.latitude, lng: posicion.coords.longitude};
+						let fechaNueva = this.global.getFecha(posicion.timestamp);
+						if(this.global.primeraVez[this.id]){
+							this.guardarEnArrays(fechaNueva, posicionNueva, 0);
+							this.global.primeraVez[this.id] = false;
+						}else{
+							let posicionVieja = this.global.posiciones[this.id];
+							let distancia = this.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+							let tiempo = this.calcularTiempoEntre(this.global.ultima_fecha[this.id], fechaNueva);
+							if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
+								this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
+								this.showNotification("Posicion guardada");
+							}
 						}
-					}
-					//this.global.rutas[this.id].push(posicionNueva);
-					//this.redrawPath(this.global.rutas[this.id]);
-					this.global.markers[this.id].setPosition(posicionNueva);
-				}, 0);
-			});
+						//this.global.rutas[this.id].push(posicionNueva);
+						//this.redrawPath(this.global.rutas[this.id]);
+						this.global.markers[this.id].setPosition(posicionNueva);
+					}, 0);
+				});
+		//});
+		this.backgroundMode.enable();
+	}
+	
+	showNotification (texto) {
+		// Schedule a single notification
+		this.localNotifications.schedule({
+			id: 1,
+			text: texto,
+			sound: 'file://sound.mp3'
+			//data: { secret: key }
+		});
 	}
 	
 	guardarEnArrays(fecha, posicion, distancia){

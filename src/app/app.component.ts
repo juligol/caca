@@ -5,7 +5,6 @@ import { Home } from '../pages/home/home';
 import { Login } from '../pages/login/login';
 import { Logout } from '../pages/logout/logout';
 import { GlobalProvider } from "../providers/global/global";
-import { BackgroundMode } from '@ionic-native/background-mode';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 
@@ -24,8 +23,7 @@ export class MyApp {
 				public menu: MenuController,
 				public statusBar: StatusBar,
 				public splashScreen: SplashScreen,
-				public global: GlobalProvider,
-				private backgroundMode: BackgroundMode) {
+				public global: GlobalProvider) {
 		
 		this.initializeApp();
 		// set our app's pages
@@ -47,7 +45,6 @@ export class MyApp {
 	openPage(page) {
 		// close the menu when clicking a link from the menu
 		this.menu.close();
-		this.backgroundMode.enable();
 		// Si voy a home abro el loading global
 		if(page.title == 'Home')
 			this.global.loading();
