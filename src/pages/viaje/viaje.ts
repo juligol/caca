@@ -135,7 +135,10 @@ export class Viaje {
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
 		//let options = {timeout : 120000, enableHighAccuracy: true};
-		//this.backgroundMode.on('activate').subscribe(() => {
+		this.backgroundMode.enable();
+		this.backgroundMode.setDefaults({silent: true});
+		this.backgroundMode.disableWebViewOptimizations();
+		this.backgroundMode.on('activate').subscribe(() => {
 			this.global.subscriptions[this.id] = this.geolocation.watchPosition(/*options*/)
 				.pipe(
 					filter((p) => p.coords !== undefined) //Filter Out Errors
@@ -161,8 +164,7 @@ export class Viaje {
 						this.global.markers[this.id].setPosition(posicionNueva);
 					}, 0);
 				});
-		//});
-		this.backgroundMode.enable();
+		});
 	}
 	
 	showNotification (texto) {
