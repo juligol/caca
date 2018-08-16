@@ -1,7 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocationResponse } from '@ionic-native/background-geolocation';
+import { BackgroundGeolocation, BackgroundGeolocationConfig/*, BackgroundGeolocationResponse*/ } from '@ionic-native/background-geolocation';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import 'rxjs/add/operator/filter';
+import { GlobalProvider } from "../global/global";
 
 /*
   Generated class for the LocationTrackerProvider provider.
@@ -16,29 +17,37 @@ export class LocationTracker {
 	watch: any;
 	public isTracking: Boolean;
 
-	constructor(public zone: NgZone, public backgroundGeolocation: BackgroundGeolocation, private geolocation: Geolocation) {
+	constructor(public zone: NgZone,
+				public backgroundGeolocation: BackgroundGeolocation, 
+				public geolocation: Geolocation,
+				public global: GlobalProvider) {
+		
 		this.resetTracking();
 		this.isTracking = false;
 	}
 	
 	startTracking() {
 		this.isTracking = true;
+		
 		// Background Tracking		
 		const config: BackgroundGeolocationConfig = {
 			desiredAccuracy: 0,
-			stationaryRadius: 0,
-			distanceFilter: 0,
+			stationaryRadius: 20,
+			distanceFilter: 10,
 			debug: true,
-			stopOnTerminate: false
+			interval: 2000
+			//stopOnTerminate: false
 		};
-		this.backgroundGeolocation.configure(config).subscribe((position: BackgroundGeolocationResponse) => {
-			// Run update inside of Angular's zone
+		
+		this.backgroundGeolocation.configure(config).subscribe((location) => {
+			this.posiciones.push('Back:  ' + location.latitude + ', ' + location.longitude);
+			// Update inside of Angular's zone
 			this.zone.run(() => {
-				this.posiciones.push('Back:  ' + position.coords.latitude + ', ' + position.coords.longitude);
+				this.posiciones.push('Back:  ' + location.latitude + ', ' + location.longitude);
 			});
 		}, 
 		(err) => {
-			console.log(err);
+			this.global.showError("Oooops! Error en background!");
 		});
 		// Turn ON the background-geolocation system.
 		this.backgroundGeolocation.start();
@@ -49,15 +58,14 @@ export class LocationTracker {
 			enableHighAccuracy: true
 		};
 		this.watch = this.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
-			// Run update inside of Angular's zone
 			this.zone.run(() => {
 				this.posiciones.push('Front:  ' + position.coords.latitude + ', ' + position.coords.longitude);
 			});
-	 
 		});
 	}
 	
 	stopTracking() {
+		//this.backgroundGeolocation.stop();
 		this.backgroundGeolocation.finish();
 		this.watch.unsubscribe();
 		this.isTracking = false;

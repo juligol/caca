@@ -193,8 +193,8 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		//this.verificarGPS(event, item);
-		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		this.verificarGPS(event, item);
+		//this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 	
 	verificarGPS(event, item){
