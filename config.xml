@@ -84,23 +84,14 @@
     <allow-navigation href="http://192.168.0.14:8100" />
     <plugin name="cordova.plugins.diagnostic" spec="^4.0.5" />
     <plugin name="cordova-plugin-request-location-accuracy" spec="^2.2.2" />
-    <plugin name="cordova-plugin-background-mode" spec="^0.7.2" />
     <plugin name="cordova-plugin-geolocation" spec="^4.0.1">
         <variable name="GEOLOCATION_USAGE_DESCRIPTION" value="To track your walks" />
     </plugin>
     <plugin name="cordova-sqlite-storage" spec="^2.3.3" />
     <plugin name="cordova-plugin-insomnia" spec="^4.3.0" />
     <plugin name="cordova-plugin-local-notification" spec="^0.9.0-beta.2" />
-    <plugin name="cordova-plugin-mauron85-background-geolocation" spec="^2.3.5">
-        <variable name="GOOGLE_PLAY_SERVICES_VERSION" value="11+" />
-        <variable name="ANDROID_SUPPORT_LIBRARY_VERSION" value="23+" />
-        <variable name="ICON" value="@mipmap/icon" />
-        <variable name="SMALL_ICON" value="@mipmap/icon" />
-        <variable name="ACCOUNT_NAME" value="@string/app_name" />
-        <variable name="ACCOUNT_LABEL" value="@string/app_name" />
-        <variable name="ACCOUNT_TYPE" value="$PACKAGE_NAME.account" />
-        <variable name="CONTENT_AUTHORITY" value="$PACKAGE_NAME" />
-    </plugin>
+    <plugin name="cordova-plugin-background-mode" spec="^0.7.2" />
     <engine name="android" spec="7.0.0" />
-    <engine name="ios" spec="4.5.4" />
+    <engine name="ios" spec="4.5.5" />
+    <plugin name="cordova-plugin-mauron85-background-geolocation" spec="~2.3.5" />
 </widget>
