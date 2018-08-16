@@ -9,10 +9,12 @@ import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
 import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
-import { GlobalProvider } from '../providers/global/global';
 import { BackgroundMode } from '@ionic-native/background-mode';
 import { Insomnia } from '@ionic-native/insomnia';
 import { LocalNotifications } from '@ionic-native/local-notifications';
+import { BackgroundGeolocation } from '@ionic-native/background-geolocation';
+import { LocationTracker } from '../providers/location-tracker/location-tracker';
+import { GlobalProvider } from '../providers/global/global';
 
 //------------------------------Pages----------------------------------------
 import { Login } from '../pages/login/login';
@@ -55,10 +57,12 @@ import { Password } from '../pages/password/password';
     {provide: ErrorHandler, useClass: IonicErrorHandler},
 	Diagnostic,
 	LocationAccuracy,
-    GlobalProvider,
 	BackgroundMode,
 	Insomnia,
-	LocalNotifications
+	LocalNotifications,
+	BackgroundGeolocation,
+    GlobalProvider,
+    LocationTracker
   ]
 })
 

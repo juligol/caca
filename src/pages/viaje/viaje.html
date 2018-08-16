@@ -12,8 +12,16 @@
 </ion-header>
 
 <ion-content>
-  <div id="map"></div>
-  <ion-scroll scrollY="true" class="scroll">
-    <div padding-horizontal id="panel"></div>
-  </ion-scroll>
+	<button ion-button full primary *ngIf="!locationTracker.isTracking" (click)="start()">Start Tracking</button>
+	<button ion-button full primary *ngIf="locationTracker.isTracking" (click)="stop()">Stop Tracking</button>
+	<button ion-button full primary *ngIf="!locationTracker.isTracking" (click)="resetear()">Reset Tracking</button>
+	<ion-list>
+		<ion-item *ngFor="let pos of locationTracker.posiciones">
+			{{ pos }}
+		</ion-item>
+	</ion-list>
+	<div id="map"></div>
+	<ion-scroll scrollY="true" class="scroll">
+		<div padding-horizontal id="panel"></div>
+	</ion-scroll>
 </ion-content>

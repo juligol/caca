@@ -8,6 +8,7 @@ import { filter } from 'rxjs/operators';
 import { Insomnia } from '@ionic-native/insomnia';
 import { BackgroundMode } from '@ionic-native/background-mode';
 import { LocalNotifications } from '@ionic-native/local-notifications';
+import { LocationTracker } from '../../providers/location-tracker/location-tracker';
 
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 import { Home } from '../home/home';
@@ -41,7 +42,8 @@ export class Viaje {
 				private plt: Platform,
 				private insomnia: Insomnia,
 				public backgroundMode: BackgroundMode,
-				private localNotifications: LocalNotifications) {
+				private localNotifications: LocalNotifications,
+				public locationTracker: LocationTracker) {
 					
 		this.menuCtrl.enable(false);
 					
@@ -53,6 +55,18 @@ export class Viaje {
 			() => console.log('success'),
 			() => console.log('error')
 		);
+	}
+	
+	start(){
+		this.locationTracker.startTracking();
+	}
+ 
+	stop(){
+		this.locationTracker.stopTracking();
+	}
+	
+	resetear(){
+		this.locationTracker.resetTracking();
 	}
 	
 	ionViewWillEnter() {
@@ -153,7 +167,7 @@ export class Viaje {
 							let tiempo = this.calcularTiempoEntre(this.global.ultima_fecha[this.id], fechaNueva);
 							if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
 								this.guardarEnArrays(fechaNueva, posicionNueva, distancia);
-								this.showNotification("Posicion guardada");
+								//this.showNotification("Posicion guardada");
 							}
 						}
 						//this.global.rutas[this.id].push(posicionNueva);
