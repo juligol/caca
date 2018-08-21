@@ -111,7 +111,7 @@ export class LocationTracker {
 	}
 	
 	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
-		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva});
+		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.latitud = posicionNueva.lat;
 			this.longitud = posicionNueva.lng;
@@ -135,7 +135,7 @@ export class LocationTracker {
 			if(posicionVieja){
 				var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 				var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
-				if(distancia > 0 /*100 metros*/ && tiempo >= 1 /*2 minutos*/){
+				if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
 					this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
 				}
 			}

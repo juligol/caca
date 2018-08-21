@@ -239,13 +239,14 @@
 		$latitud = $request->latitud;
 		$longitud = $request->longitud;
 		$tiempo = $request->tiempo;
+		$tipo = $request->tipo;
 		$sql = "SELECT * FROM mab_posicion_chofer WHERE chofer_id = " . $chofer_id;
 		$res = mysql_query($sql, $conexion);
 		$cant = mysql_num_rows($res);
 		if ($cant == 0) {
-			$query = "INSERT INTO mab_posicion_chofer (chofer_id, latitud, longitud, tiempo) VALUES ('$chofer_id', '$latitud', '$longitud', '$tiempo')";
+			$query = "INSERT INTO mab_posicion_chofer (chofer_id, latitud, longitud, tiempo, tipo) VALUES ('$chofer_id', '$latitud', '$longitud', '$tiempo', '$tipo')";
 		} else {
-			$query = "UPDATE mab_posicion_chofer SET latitud = '$latitud', longitud = '$longitud', tiempo = '$tiempo' WHERE chofer_id = " . $chofer_id;
+			$query = "UPDATE mab_posicion_chofer SET latitud = '$latitud', longitud = '$longitud', tiempo = '$tiempo', tipo = '$tipo' WHERE chofer_id = " . $chofer_id;
 		}
 		$result = mysql_query($query, $conexion);
 		return $result;

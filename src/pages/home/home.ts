@@ -40,8 +40,8 @@ export class Home{
 		});
 		
 		this.cargarViajes();
-		//this.encenderGPS();
-		this.locationTracker.startTracking();
+		this.encenderGPS();
+		//this.locationTracker.startTracking();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
