@@ -7,7 +7,6 @@ import { SplashScreen } from '@ionic-native/splash-screen';
 import { Geolocation } from '@ionic-native/geolocation';
 import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
-import { Diagnostic } from '@ionic-native/diagnostic';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { BackgroundMode } from '@ionic-native/background-mode';
 import { Insomnia } from '@ionic-native/insomnia';
@@ -53,16 +52,15 @@ import { Password } from '../pages/password/password';
   providers: [
     StatusBar,
     SplashScreen,
-	Geolocation,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
-	Diagnostic,
 	LocationAccuracy,
+	Geolocation,
 	BackgroundMode,
 	Insomnia,
 	LocalNotifications,
 	BackgroundGeolocation,
     GlobalProvider,
-    LocationTracker
+    LocationTracker,
   ]
 })
 

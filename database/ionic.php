@@ -61,6 +61,10 @@
 					$res = viajes($request, $conexion);
 					echo json_encode($res);
 					break;
+				case 'actualizarPosicion':
+					$res = actualizarPosicion($request, $conexion);
+					echo $res;
+					break;
 				case 'guardarDirecciones':
 					$res = guardarDirecciones($request, $conexion);
 					echo $res;
@@ -227,6 +231,24 @@
 		$viaje["puntos_trayecto"] = $puntos_trayecto;
 
 		return $viaje;
+	}
+	
+	function actualizarPosicion($request, $conexion)
+	{
+		$chofer_id = $request->chofer_id;
+		$latitud = $request->latitud;
+		$longitud = $request->longitud;
+		$tiempo = $request->tiempo;
+		$sql = "SELECT * FROM mab_posicion_chofer WHERE chofer_id = " . $chofer_id;
+		$res = mysql_query($sql, $conexion);
+		$cant = mysql_num_rows($res);
+		if ($cant == 0) {
+			$query = "INSERT INTO mab_posicion_chofer (chofer_id, latitud, longitud, tiempo) VALUES ('$chofer_id', '$latitud', '$longitud', '$tiempo')";
+		} else {
+			$query = "UPDATE mab_posicion_chofer SET latitud = '$latitud', longitud = '$longitud', tiempo = '$tiempo' WHERE chofer_id = " . $chofer_id;
+		}
+		$result = mysql_query($query, $conexion);
+		return $result;
 	}
 	
 	function guardarDirecciones($request, $conexion)

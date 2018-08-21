@@ -17,7 +17,7 @@
 		<ion-item *ngFor="let item of items; let i=index" (click)="verSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
 			<ion-icon *ngIf="item.status != 1" name="pin"></ion-icon>
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" name="checkmark-circle"></ion-icon> 
-			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0" name="car"></ion-icon> 
+			<ion-icon *ngIf="locationTracker.isTracking[item.id] || (item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0)" name="car"></ion-icon> 
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" name="unlock"></ion-icon> 
 			({{ item.id }}) {{ item.origen }}
 			<ion-item-group submenu text-wrap *ngIf="isGroupShown(i)">
