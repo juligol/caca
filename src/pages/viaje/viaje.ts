@@ -81,7 +81,6 @@ export class Viaje {
 			this.locationTracker.marker = new google.maps.Marker({map: this.map, title: 'Aqui estoy!'});
 			this.locationTracker.marker.setPosition(posicion_actual);
 			this.mostrarRutaEntre(this.viajeActual.origen, this.viajeActual.destino);
-			//this.inicializarArrays();
 		});
 	}
 

@@ -4,7 +4,6 @@ import { NavController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { AlertController } from 'ionic-angular';
-import { Geolocation } from '@ionic-native/geolocation';
 import { GlobalProvider } from "../../providers/global/global";
 import { LocationTracker } from "../../providers/location-tracker/location-tracker";
 
@@ -40,8 +39,6 @@ export class Home{
 		});
 		
 		this.cargarViajes();
-		this.encenderGPS();
-		//this.locationTracker.startTracking();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
@@ -59,6 +56,29 @@ export class Home{
 				resolve();
 			});
 		}
+	}
+	
+	ionViewDidLoad(){
+		this.encenderGPS();
+		//this.locationTracker.startTracking();
+	}
+	
+	encenderGPS(){
+		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
+			if(canRequest) {
+				// the accuracy option will be ignored by iOS
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.locationTracker.startTracking(),
+					error => console.log("Error desde el request true")
+				);
+			}else{
+				// the accuracy option will be ignored by iOS
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.locationTracker.startTracking(),
+					error => console.log("Error desde el request false")
+				);
+			}
+		});
 	}
 		
 	cargarViajes(){
@@ -203,8 +223,8 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		this.verificarGPS(event, item);
-		//this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		//this.verificarGPS(event, item);
+		this.irAlViaje(item);
 	}
 	
 	verificarGPS(event, item){
@@ -222,26 +242,6 @@ export class Home{
 					() => this.irAlViaje(item),
 					error => this.global.loader.dismiss()
 					//error => console.log("Error desde el request false")
-				);
-			}
-		});
-	}
-	
-	encenderGPS(){
-		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
-			if(canRequest) {
-				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					//error => this.global.loader.dismiss()
-					error => console.log("Error desde el request true")
-				);
-			}else{
-				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					//error => this.global.loader.dismiss()
-					error => console.log("Error desde el request false")
 				);
 			}
 		});
