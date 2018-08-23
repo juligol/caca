@@ -12,8 +12,11 @@ import { BackgroundMode } from '@ionic-native/background-mode';
 import { Insomnia } from '@ionic-native/insomnia';
 import { LocalNotifications } from '@ionic-native/local-notifications';
 import { BackgroundGeolocation } from '@ionic-native/background-geolocation';
+
+//------------------------------Providers----------------------------------------
 import { LocationTracker } from '../providers/location-tracker/location-tracker';
 import { GlobalProvider } from '../providers/global/global';
+import { ViajesProvider } from '../providers/viajes/viajes';
 
 //------------------------------Pages----------------------------------------
 import { Login } from '../pages/login/login';
@@ -61,6 +64,7 @@ import { Password } from '../pages/password/password';
 	BackgroundGeolocation,
     GlobalProvider,
     LocationTracker,
+    ViajesProvider,
   ]
 })
 

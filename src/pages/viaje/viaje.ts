@@ -1,11 +1,8 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform } from 'ionic-angular';
-import { Geolocation } from '@ionic-native/geolocation';
 import { AlertController } from 'ionic-angular';
-import { GlobalProvider } from "../../providers/global/global";
 import { MenuController } from 'ionic-angular';
-import { Insomnia } from '@ionic-native/insomnia';
-import { BackgroundMode } from '@ionic-native/background-mode';
+import { GlobalProvider } from "../../providers/global/global";
 import { LocationTracker } from '../../providers/location-tracker/location-tracker';
 
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
@@ -26,19 +23,14 @@ export class Viaje {
 	map: any;
 	directionsService: any = null;
 	directionsDisplay: any = null;
-	currentMapTrack: any = null;
-	
-	interval: any;
+	//currentMapTrack: any = null;
 
-	constructor(public navCtrl: NavController, 
+	constructor(private plt: Platform,
+				public navCtrl: NavController, 
 			    public navParams: NavParams,
-			    private geolocation: Geolocation,
 				public alertCtrl: AlertController,
 				public global: GlobalProvider,
 				public menuCtrl: MenuController,
-				private plt: Platform,
-				private insomnia: Insomnia,
-				public backgroundMode: BackgroundMode,
 				public locationTracker: LocationTracker) {
 					
 		this.menuCtrl.enable(false);
@@ -47,18 +39,6 @@ export class Viaje {
 		this.id = this.viajeActual.id;
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer
-		this.insomnia.keepAwake().then(
-			() => console.log('success'),
-			() => console.log('error')
-		);
-	}
-	
-	start(){
-		this.locationTracker.startTracking();
-	}
- 
-	stop(){
-		this.locationTracker.stopTracking();
 	}
 	
 	ionViewWillEnter() {
@@ -113,10 +93,15 @@ export class Viaje {
 	
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
-		this.backgroundMode.enable();
-		this.locationTracker.stopTracking();
 		this.locationTracker.inicializarArrays(this.id);
-		this.locationTracker.startTracking();
+		this.locationTracker.geolocation.getCurrentPosition().then(pos => {
+			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+			let fechaNueva = this.global.getFecha(pos.timestamp);
+			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, 0);
+			//this.global.showSuccess(posicionNueva.lat + ", " + posicionNueva.lng);
+		}).catch((error) => {
+			console.log('Error getting location', error);
+		});
 	}
 	
 	/*redrawPath(path) {
@@ -160,44 +145,45 @@ export class Viaje {
 	
 	detenerViaje() {
 		this.global.loading();
-		this.locationTracker.stopTracking();
-		this.geolocation.getCurrentPosition().then(pos => {
+		this.locationTracker.geolocation.getCurrentPosition().then(pos => {
 			let posicionVieja = this.locationTracker.ultima_posicion[this.id];
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
+			//this.global.showSuccess(posicionNueva.lat + ", " + posicionNueva.lng);
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			let distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, distancia);
-			this.global.showSuccess(this.locationTracker.distancias[this.id].length);
+			//this.global.showSuccess(this.locationTracker.distancias[this.id].length);
 			if (this.locationTracker.distancias[this.id].length > 2 && this.locationTracker.distancias[this.id].length == this.locationTracker.latitudes[this.id].length && 
 				this.locationTracker.latitudes[this.id].length == this.locationTracker.longitudes[this.id].length && this.locationTracker.longitudes[this.id].length == this.locationTracker.fechas[this.id].length) {
-				let latitudess = this.locationTracker.latitudes[this.id].join('|'); 
-				let longitudess = this.locationTracker.longitudes[this.id].join('|'); 
-				let distanciass = this.locationTracker.distancias[this.id].join('|'); 
-				let fechass = this.locationTracker.fechas[this.id].join('|');
-				let myData = JSON.stringify({action: "guardarDirecciones", viaje_id: this.id, latitudes: latitudess, longitudes: longitudess, distancias: distanciass, fechas: fechass});
-				this.global.http.post(this.global.link, myData).subscribe(data => {
-					this.locationTracker.eliminarDatosViaje(this.id);
-					this.locationTracker.startTracking();
-					if(this.viajeActual.fechaValida){
-						this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
-						this.cargando = true;
-					}
-					else{
-						this.navCtrl.setRoot(Home);
-						this.cargando = false;
-					}
-				}, 
-				error => {
-					this.global.showError("Oooops! Por favor intente de nuevo!");
-					this.locationTracker.startTracking();
-				});
+				this.guardarViaje();
 			}else{
 				this.reiniciarViaje();
 			}
 		}).catch((error) => {
 			console.log('Error getting location', error);
 			this.global.showError("Oooops! Error obteniendo posicion actual!");
-			this.locationTracker.startTracking();
+		});
+	}
+	
+	guardarViaje(){
+		let latitudess = this.locationTracker.latitudes[this.id].join('|'); 
+		let longitudess = this.locationTracker.longitudes[this.id].join('|'); 
+		let distanciass = this.locationTracker.distancias[this.id].join('|'); 
+		let fechass = this.locationTracker.fechas[this.id].join('|');
+		let myData = JSON.stringify({action: "guardarDirecciones", viaje_id: this.id, latitudes: latitudess, longitudes: longitudess, distancias: distanciass, fechas: fechass});
+		this.global.http.post(this.global.link, myData).subscribe(data => {
+			this.locationTracker.eliminarDatosViaje(this.id);
+			if(this.viajeActual.fechaValida){
+				this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+				this.cargando = true;
+			}
+			else{
+				this.navCtrl.setRoot(Home);
+				this.cargando = false;
+			}
+		}, 
+		error => {
+			this.global.showError("Oooops! Por favor intente de nuevo!");
 		});
 	}
 	
@@ -207,8 +193,6 @@ export class Viaje {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.cargando = true;
-			//this.locationTracker.inicializarArrays(this.id);
-			//this.currentMapTrack.setMap(null);
 			this.global.loader.dismiss();
 			this.locationTracker.eliminarDatosViaje(this.id);
 			this.locationTracker.startTracking();

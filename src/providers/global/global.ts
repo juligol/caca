@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
-import { Subscription } from 'rxjs/Subscription';
 
 @Injectable()
 export class GlobalProvider {

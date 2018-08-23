@@ -3,9 +3,10 @@ import { MenuController } from 'ionic-angular';
 import { NavController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
-import { AlertController } from 'ionic-angular';
+
 import { GlobalProvider } from "../../providers/global/global";
 import { LocationTracker } from "../../providers/location-tracker/location-tracker";
+import { ViajesProvider } from "../../providers/viajes/viajes";
 
 import { Viaje } from '../viaje/viaje';
 import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
@@ -16,21 +17,16 @@ import { CerrarViaje } from '../cerrar_viaje/cerrar_viaje';
 })
 
 export class Home{
-	viajes = [];
-	viajesAux = [];
-	busqueda: string = '';
-	items = [];
-	contador: any;
 	shownGroup = null;
 	myCallbackFunction: any;
 
 	constructor(public menuCtrl: MenuController, 
 				private navCtrl: NavController,
 				private storage: Storage,
-				public alertCtrl: AlertController,
 				private locationAccuracy: LocationAccuracy,
 				public global: GlobalProvider,
-				public locationTracker: LocationTracker){
+				public locationTracker: LocationTracker,
+				public viajesProvider: ViajesProvider){
 				
 		this.menuCtrl.enable(true);
 		
@@ -38,7 +34,7 @@ export class Home{
 			console.log('Hola ' + val.nombre);
 		});
 		
-		this.cargarViajes();
+		this.viajesProvider.cargarViajes();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
@@ -46,13 +42,13 @@ export class Home{
 					this.global.loader.dismiss();
 				this.menuCtrl.enable(true);
 				var viaje_id = parametros.viaje.id;
-				this.viajes = this.viajes.map((item) => {
+				this.viajesProvider.viajes = this.viajesProvider.viajes.map((item) => {
 					if(item.id == viaje_id)
 						return parametros.viaje;
 					else
 						return item;
 				});
-				this.inicializarListado(this.viajes);
+				this.viajesProvider.inicializarListado(this.viajesProvider.viajes);
 				resolve();
 			});
 		}
@@ -80,94 +76,6 @@ export class Home{
 			}
 		});
 	}
-		
-	cargarViajes(){
-		this.storage.get('user').then((user) => {
-			var myData = JSON.stringify({action: "viajes", chofer_id: user.id});
-			this.global.http.post(this.global.link, myData).subscribe(data => {
-				var viajes = JSON.parse(data["_body"]);
-				//console.log(viajes);
-				if(viajes.length > 0)
-				{
-					this.viajes = viajes;
-					this.inicializarListado(this.viajes);
-				}
-				this.global.loader.dismiss();
-			}, 
-			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
-			});
-		});
-	}
-	
-	inicializarListado(viajes){
-		this.viajesAux = viajes;
-		if(viajes.length < 15){
-			this.contador = viajes.length;
-		}else{
-			this.contador = 15;
-		}
-		this.items = [];
-		for (var i = 0; i < this.contador; i++) {
-			var viaje = viajes[i];
-			//this.locationTracker.inicializarArrays(viaje.id);
-			if(this.locationTracker.isTracking[viaje.id])
-				viaje.en_proceso = 1;
-			this.items.push(viaje);
-		}
-	}
-	
-	doInfinite(infiniteScroll) {
-		setTimeout(() => {
-			var cantidadAdicional;
-			var losQueQuedan = this.viajesAux.length - this.contador;
-			if(losQueQuedan < 5){
-				cantidadAdicional = losQueQuedan;
-			}else{
-				cantidadAdicional = 5;
-			}
-			for (let i = this.contador; i < this.contador + cantidadAdicional; i++) {
-				this.items.push( this.viajesAux[i] );
-			}
-			this.contador += cantidadAdicional;
-			infiniteScroll.complete();
-		}, 500);
-	}
-	
-	buscarItems(ev: any) {
-		this.inicializarListado(this.viajes);
-		// set val to the value of the searchbar
-		this.busqueda = ev.target.value;
-		// if the value is an empty string don't filter the items
-		if (this.busqueda && this.busqueda.trim() != '') {
-			this.viajesAux = this.viajes.filter((item) => {
-				return this.busquedaPorID(item) || this.busquedaPorOrigen(item) || this.busquedaPorPasajero(item);
-			});
-			this.inicializarListado(this.viajesAux);
-		}
-	}
-	
-	busquedaPorID(item){
-		return (item.id.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
-	}
-	
-	busquedaPorOrigen(item){
-		return (item.origen.toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
-	}
-	
-	busquedaPorPasajero(item){
-		return  (item.pasajero1.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
-				(item.pasajero2.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
-				(item.pasajero3.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1) ||
-				(item.pasajero4.trim().toLowerCase().indexOf(this.busqueda.toLowerCase()) > -1);
-	}
-	
-	actualizarListado(refresher) {
-		setTimeout(() => {
-			this.cargarViajes();
-			refresher.complete();
-		}, 2000);
-	}
 	
 	verSubmenu(group) {
 		if (this.isGroupShown(group)) {
@@ -181,50 +89,30 @@ export class Home{
 		return this.shownGroup === group;
 	}
 	
+	doInfinite(infiniteScroll) {
+		this.viajesProvider.doInfinite(infiniteScroll);
+	}
+	
+	buscarItems(evento: any) {
+		this.viajesProvider.buscarItems(evento);
+	}
+	
+	actualizarListado(refresher) {
+		this.viajesProvider.actualizarListado(refresher);
+	}
+	
+	preguntarRechazarViaje(event, item){
+		this.viajesProvider.preguntarRechazarViaje(event, item);
+	}
+	
 	cerrarViaje(event, item) {
 		this.navCtrl.setRoot(CerrarViaje, {viaje: item});
 	}
 	
-	preguntarRechazarViaje(event, item){
-		this.global.loading();
-		let alert = this.alertCtrl.create({
-			title: 'Viaje ' + item.id,
-			message: 'Desea rechazar este viaje?',
-			buttons: [
-			{
-				text: 'Cancelar',
-				role: 'cancel',
-				handler: () => {
-					this.global.loader.dismiss();
-				}
-			},
-			{
-				text: 'Aceptar',
-				handler: () => {
-					this.rechazarViaje(event, item);
-				}
-			}
-			]
-		});
-		alert.present();
-	}
-	
-	rechazarViaje(event, item) {
-		this.storage.get('user').then((user) => {
-			var myData = JSON.stringify({action: "rechazarViaje", viaje_id: item.id, chofer_id: user.id, chofer: user.nombre, proveedor: user.proveedor});
-			this.global.http.post(this.global.link, myData).subscribe(data => {
-				this.cargarViajes();
-			}, 
-			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
-			});
-		});
-	}
-	
 	verRecorrido(event, item) {
 		this.global.loading();
-		//this.verificarGPS(event, item);
-		this.irAlViaje(item);
+		this.verificarGPS(event, item);
+		//this.irAlViaje(item);
 	}
 	
 	verificarGPS(event, item){
@@ -234,20 +122,19 @@ export class Home{
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
 					error => this.global.loader.dismiss()
-					//error => console.log("Error desde el request true")
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
 					error => this.global.loader.dismiss()
-					//error => console.log("Error desde el request false")
 				);
 			}
 		});
 	}
 	
 	irAlViaje(item){
+		this.locationTracker.startTracking();
 		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 }

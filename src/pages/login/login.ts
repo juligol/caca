@@ -22,13 +22,6 @@ export class Login {
 				public global: GlobalProvider){
 					
 		this.menuCtrl.enable(false);
-		
-		this.storage.get('user').then((val) => {
-			if(val){
-				this.global.loading();
-				this.navCtrl.setRoot(Home);
-			}
-		});
 					
 		this.form = this.formBuilder.group({
 			email: ['', Validators.compose([Validators.required, Validators.email])],

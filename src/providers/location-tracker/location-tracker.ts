@@ -26,6 +26,7 @@ export class LocationTracker {
 	
 	//public rutas 			= [];
 	public primeraVez: Array<Boolean> = [];
+	//public ultimaVez: Array<Boolean> = [];
 	public isTracking: Array<Boolean> = [];
 
 	constructor(public zone: NgZone,
@@ -38,7 +39,7 @@ export class LocationTracker {
 			desiredAccuracy: 0,
 			stationaryRadius: 20,
 			distanceFilter: 10,
-			debug: true,
+			//debug: true,
 			interval: 2000
 			//stopOnTerminate: false
 		};		
@@ -102,6 +103,7 @@ export class LocationTracker {
 		this.ultima_posicion[id] = null;
 		this.ultima_fecha[id] = null;
 		this.primeraVez[id] = true;
+		//this.ultimaVez[id] = false;
 		this.isTracking[id] = false;
 		
 		this.fechas[id] = [];
@@ -161,6 +163,7 @@ export class LocationTracker {
 		console.log(this.ultima_fecha);
 		console.log(this.ultima_posicion);
 		console.log(this.primeraVez);
+		//console.log(this.ultimaVez);
 		console.log(this.isTracking);
 		console.log(this.fechas);
 		console.log(this.latitudes);
@@ -172,6 +175,7 @@ export class LocationTracker {
 		this.ultima_fecha[id] = fecha;
 		this.ultima_posicion[id] = posicion;
 		this.primeraVez[id] = false;
+		//this.ultimaVez[id] = false;
 		this.isTracking[id] = true;
 		
 		this.fechas[id].push(fecha);
@@ -183,8 +187,8 @@ export class LocationTracker {
 	}
 	
 	stopTracking() {
-		//this.backgroundGeolocation.stop();
 		this.backgroundGeolocation.finish();
+		this.backgroundGeolocation.stop();
 		this.watch.unsubscribe();
 	}
 }
