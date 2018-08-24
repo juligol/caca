@@ -34,8 +34,8 @@ export class LocationTracker {
 					
 		this.config = {
 			desiredAccuracy: 0,
-			stationaryRadius: 0,
-			distanceFilter: 0,
+			stationaryRadius: 20,
+			distanceFilter: 10,
 			debug: false
 			//stopOnTerminate: false
 		};		
@@ -43,7 +43,7 @@ export class LocationTracker {
 	
 	startTracking() {
 		this.backgroundTracking();
-		//this.foregroundTracking();
+		this.foregroundTracking();
 	}
 	
 	backgroundTracking(){
