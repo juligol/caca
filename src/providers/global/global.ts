@@ -45,6 +45,15 @@ export class GlobalProvider {
 		alert.present();
 	}
 	
+	mensaje(titulo, texto) {
+		let alert = this.alertCtrl.create({
+			title: titulo,
+			subTitle: texto,
+			buttons: ['OK']
+		});
+		alert.present();
+	}
+	
 	getFechaActual(){
 		return new Date(Date.now() - this.tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}

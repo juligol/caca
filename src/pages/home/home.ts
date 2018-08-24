@@ -35,6 +35,8 @@ export class Home{
 		});
 		
 		this.viajesProvider.cargarViajes();
+		this.encenderGPS();
+		//this.locationTracker.startTracking();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
@@ -52,11 +54,6 @@ export class Home{
 				resolve();
 			});
 		}
-	}
-	
-	ionViewDidLoad(){
-		this.encenderGPS();
-		//this.locationTracker.startTracking();
 	}
 	
 	encenderGPS(){

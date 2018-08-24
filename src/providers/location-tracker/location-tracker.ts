@@ -24,9 +24,6 @@ export class LocationTracker {
 	public longitudes 		= [];
 	public distancias		= [];
 	
-	//public rutas 			= [];
-	public primeraVez: Array<Boolean> = [];
-	//public ultimaVez: Array<Boolean> = [];
 	public isTracking: Array<Boolean> = [];
 
 	constructor(public zone: NgZone,
@@ -39,8 +36,7 @@ export class LocationTracker {
 			desiredAccuracy: 0,
 			stationaryRadius: 20,
 			distanceFilter: 10,
-			//debug: true,
-			interval: 2000
+			debug: true
 			//stopOnTerminate: false
 		};		
 	}
@@ -64,8 +60,8 @@ export class LocationTracker {
 			}, 0);
 		}, 
 		(error) => {
+			this.global.mensaje("Error en background! ", error);
 			//this.global.showError("Oooops! Error en background!");
-			console.log("Error: " + error);
 		});
 		
 		// Turn ON the background-geolocation system.
@@ -102,8 +98,6 @@ export class LocationTracker {
 	inicializar(id){
 		this.ultima_posicion[id] = null;
 		this.ultima_fecha[id] = null;
-		this.primeraVez[id] = true;
-		//this.ultimaVez[id] = false;
 		this.isTracking[id] = false;
 		
 		this.fechas[id] = [];
@@ -130,16 +124,12 @@ export class LocationTracker {
 	}
 	
 	guardarPosicion(id, fechaNueva, posicionNueva){
-		if(this.primeraVez[id]){
-			this.guardarEnArrays(id, fechaNueva, posicionNueva, 0);
-		}else{
-			var posicionVieja = this.ultima_posicion[id];
-			if(posicionVieja){
-				var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
-				var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
-				if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
-					this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
-				}
+		var posicionVieja = this.ultima_posicion[id];
+		if(posicionVieja){
+			var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+			var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
+			if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
+				this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
 			}
 		}
 	}
@@ -162,8 +152,6 @@ export class LocationTracker {
 		console.log(this.viajes);
 		console.log(this.ultima_fecha);
 		console.log(this.ultima_posicion);
-		console.log(this.primeraVez);
-		//console.log(this.ultimaVez);
 		console.log(this.isTracking);
 		console.log(this.fechas);
 		console.log(this.latitudes);
@@ -174,8 +162,6 @@ export class LocationTracker {
 	guardarEnArrays(id, fecha, posicion, distancia){
 		this.ultima_fecha[id] = fecha;
 		this.ultima_posicion[id] = posicion;
-		this.primeraVez[id] = false;
-		//this.ultimaVez[id] = false;
 		this.isTracking[id] = true;
 		
 		this.fechas[id].push(fecha);

@@ -15,7 +15,8 @@ export class Logout {
 		this.storage.get('user').then((val) => {
 			console.log('Cerrando sesión de: ' + val.nombre);
 		});
-		this.locationTracker.stopTracking();
+		if(this.locationTracker.watch)
+			this.locationTracker.stopTracking();
 		this.storage.remove('user');
 		this.storage.get('user').then((val) => {
 			this.navCtrl.setRoot(Login);
