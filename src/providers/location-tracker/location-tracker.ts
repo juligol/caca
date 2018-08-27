@@ -36,14 +36,15 @@ export class LocationTracker {
 			desiredAccuracy: 0,
 			stationaryRadius: 0,
 			distanceFilter: 0,
-			debug: true,
-			stopOnTerminate: false
+			debug: false,
+			//stopOnTerminate: false,
+			interval: 2000
 		};		
 	}
 	
 	startTracking() {
 		this.backgroundTracking();
-		//this.foregroundTracking();
+		this.foregroundTracking();
 	}
 	
 	backgroundTracking(){
@@ -171,6 +172,6 @@ export class LocationTracker {
 	stopTracking() {
 		this.backgroundGeolocation.finish();
 		this.backgroundGeolocation.stop();
-		//this.watch.unsubscribe();
+		this.watch.unsubscribe();
 	}
 }

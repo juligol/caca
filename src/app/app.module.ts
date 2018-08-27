@@ -4,20 +4,20 @@ import { IonicApp, IonicModule, IonicErrorHandler } from 'ionic-angular';
 import { MyApp } from './app.component';
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
+
+//------------------------------ Plugins ----------------------------------------
 import { HttpModule } from '@angular/http';
 import { IonicStorageModule } from '@ionic/storage';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { BackgroundGeolocation } from '@ionic-native/background-geolocation';
 import { Geolocation } from '@ionic-native/geolocation';
-import { BackgroundMode } from '@ionic-native/background-mode';
-import { Insomnia } from '@ionic-native/insomnia';
 
-//------------------------------Providers----------------------------------------
+//------------------------------ Providers ----------------------------------------
 import { LocationTracker } from '../providers/location-tracker/location-tracker';
 import { GlobalProvider } from '../providers/global/global';
 import { ViajesProvider } from '../providers/viajes/viajes';
 
-//------------------------------Pages----------------------------------------
+//------------------------------ Pages ----------------------------------------
 import { Login } from '../pages/login/login';
 import { Logout } from '../pages/logout/logout';
 import { Home } from '../pages/home/home';
@@ -55,13 +55,11 @@ import { Password } from '../pages/password/password';
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
+    LocationTracker,
 	LocationAccuracy,
 	BackgroundGeolocation,
 	Geolocation,
-	BackgroundMode,
-	Insomnia,
     GlobalProvider,
-    LocationTracker,
     ViajesProvider,
   ]
 })
