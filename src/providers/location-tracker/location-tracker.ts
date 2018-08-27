@@ -1,5 +1,5 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BackgroundGeolocation, BackgroundGeolocationConfig/*, BackgroundGeolocationResponse*/ } from '@ionic-native/background-geolocation';
+import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocationResponse } from '@ionic-native/background-geolocation';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import 'rxjs/add/operator/filter';
 import { GlobalProvider } from "../global/global";
@@ -34,31 +34,28 @@ export class LocationTracker {
 					
 		this.config = {
 			desiredAccuracy: 0,
-			stationaryRadius: 20,
-			distanceFilter: 10,
+			stationaryRadius: 0,
+			distanceFilter: 0,
 			debug: true,
-			interval: 2000
-			//stopOnTerminate: false
+			stopOnTerminate: false
 		};		
 	}
 	
 	startTracking() {
 		this.backgroundTracking();
-		this.foregroundTracking();
+		//this.foregroundTracking();
 	}
 	
 	backgroundTracking(){
 		// Background Tracking
-		this.backgroundGeolocation.configure(this.config).subscribe((location) => {
-			setTimeout(() => {
-				this.zone.run(() => {
-					this.storage.get('user').then((user) => {
-						var posicionNueva = {lat: location.latitude, lng: location.longitude};
-						var fechaNueva = this.global.getFecha(location.time);
-						this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Back");
-					});
+		this.backgroundGeolocation.configure(this.config).subscribe((location: BackgroundGeolocationResponse) => {
+			this.zone.run(() => {
+				this.storage.get('user').then((user) => {
+					var posicionNueva = {lat: location.latitude, lng: location.longitude};
+					var fechaNueva = this.global.getFecha(location.time);
+					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Back");
 				});
-			}, 0);
+			});
 		}, 
 		(error) => {
 			this.global.mensaje("Error en background! ", error);
@@ -76,18 +73,16 @@ export class LocationTracker {
 			enableHighAccuracy: true
 		};
 		this.watch = this.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
-			setTimeout(() => {
-				this.zone.run(() => {
-					this.storage.get('user').then((user) => {
-						var posicionNueva = {lat: position.coords.latitude, lng: position.coords.longitude};
-						var fechaNueva = this.global.getFecha(position.timestamp);
-						this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Front");
-					},
-					error => {
-						this.global.showError("Oooops! Por favor intente de nuevo!");
-					});
+			this.zone.run(() => {
+				this.storage.get('user').then((user) => {
+					var posicionNueva = {lat: position.coords.latitude, lng: position.coords.longitude};
+					var fechaNueva = this.global.getFecha(position.timestamp);
+					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Front");
+				},
+				error => {
+					this.global.showError("Oooops! Por favor intente de nuevo!");
 				});
-			}, 0);
+			});
 		});
 	}
 	
@@ -176,6 +171,6 @@ export class LocationTracker {
 	stopTracking() {
 		this.backgroundGeolocation.finish();
 		this.backgroundGeolocation.stop();
-		this.watch.unsubscribe();
+		//this.watch.unsubscribe();
 	}
 }

@@ -34,9 +34,10 @@ export class Home{
 			console.log('Hola ' + val.nombre);
 		});
 		
-		this.viajesProvider.cargarViajes();
 		this.encenderGPS();
 		//this.locationTracker.startTracking();
+		
+		this.viajesProvider.cargarViajes();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
