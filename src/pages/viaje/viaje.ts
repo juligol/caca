@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams, Platform } from 'ionic-angular';
 import { AlertController } from 'ionic-angular';
+import { Geolocation } from '@ionic-native/geolocation';
 import { MenuController } from 'ionic-angular';
 import { GlobalProvider } from "../../providers/global/global";
 import { LocationTracker } from '../../providers/location-tracker/location-tracker';
@@ -29,6 +30,7 @@ export class Viaje {
 				public navCtrl: NavController, 
 			    public navParams: NavParams,
 				public alertCtrl: AlertController,
+				private geolocation: Geolocation,
 				public global: GlobalProvider,
 				public menuCtrl: MenuController,
 				public locationTracker: LocationTracker) {
@@ -94,11 +96,10 @@ export class Viaje {
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
 		this.locationTracker.inicializarArrays(this.id);
-		this.locationTracker.geolocation.getCurrentPosition().then(pos => {
+		this.geolocation.getCurrentPosition().then(pos => {
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, 0);
-			//this.global.showSuccess(posicionNueva.lat + ", " + posicionNueva.lng);
 		}).catch((error) => {
 			console.log('Error getting location', error);
 		});
@@ -145,10 +146,9 @@ export class Viaje {
 	
 	detenerViaje() {
 		this.global.loading();
-		this.locationTracker.geolocation.getCurrentPosition().then(pos => {
+		this.geolocation.getCurrentPosition().then(pos => {
 			let posicionVieja = this.locationTracker.ultima_posicion[this.id];
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			//this.global.showSuccess(posicionNueva.lat + ", " + posicionNueva.lng);
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			let distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, distancia);

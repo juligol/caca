@@ -235,6 +235,8 @@
 	
 	function actualizarPosicion($request, $conexion)
 	{
+		/*session_start();
+		$_SESSION["1442"] = $request;*/
 		$chofer_id = $request->chofer_id;
 		$latitud = $request->latitud;
 		$longitud = $request->longitud;
