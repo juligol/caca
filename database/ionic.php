@@ -22,28 +22,28 @@
     $postdata = file_get_contents("php://input");
     if (isset($postdata)) {
 		$request = json_decode($postdata);
+		//Produccion
+		/*$host = "127.0.0.1:3306";
+		$db = "QKBZ9X5Wht6b94Dw";
+		$user = "233205_mab";
+		$pass = "mabmobile";*/
+		//Testeo
+		$host = "127.0.0.1:3306";
+		$db = "233205-pre";
+		$user = "mab";
+		$pass = "YwXauBEtRLPNrhL9";
+
+		//Me conecto a la bd
+		$conexion = mysql_connect($host, $user, $pass) or die ("No se conectó a la base de datos");
+		mysql_select_db($db, $conexion) or die ("No se encontró la base de datos.");
+		mysql_query("SET NAMES 'utf8'");
+		mb_http_output('UTF-8');
+		header( 'Content-Type: text/html; charset=utf-8');
+		ini_set("display_errors", 0);
+		
         $action = $request->action;
 		if ($action != null)
 		{ 
-			//Produccion
-			/*$host = "127.0.0.1:3306";
-			$db = "QKBZ9X5Wht6b94Dw";
-			$user = "233205_mab";
-			$pass = "mabmobile";*/
-			//Testeo
-			$host = "127.0.0.1:3306";
-			$db = "233205-pre";
-			$user = "mab";
-			$pass = "YwXauBEtRLPNrhL9";
-
-			//Me conecto a la bd
-			$conexion = mysql_connect($host, $user, $pass) or die ("No se conectó a la base de datos");
-			mysql_select_db($db, $conexion) or die ("No se encontró la base de datos.");
-			mysql_query("SET NAMES 'utf8'");
-			mb_http_output('UTF-8');
-			header( 'Content-Type: text/html; charset=utf-8');
-			ini_set("display_errors", 0);
-			
 			switch ($action) {
 				case 'login':
 					$res = login($request, $conexion);
@@ -92,13 +92,32 @@
 				default:
 					break;
 			}
-			
-			mysql_close($conexion);
 		}
 		else 
 		{
-			echo "No hay conexión";
+			$posicion = $request[0];
+			if($posicion->provider == "network" && isset($_GET['chofer_id'])){
+				$chofer_id = $_GET['chofer_id'];
+				$latitud = $posicion->latitude;
+				$longitud = $posicion->longitude;
+				//SELECT FROM_UNIXTIME( $posicion->time * 0.001 )
+				$tiempo = date('Y-m-d H:i:s', $posicion->time  * 0.001);
+				$tipo = 'Back';
+				$sql = "SELECT * FROM mab_posicion_chofer WHERE chofer_id = " . $chofer_id;
+				$res = mysql_query($sql, $conexion);
+				$cant = mysql_num_rows($res);
+				if ($cant == 0) {
+					$query = "INSERT INTO mab_posicion_chofer (chofer_id, latitud, longitud, tiempo, tipo) VALUES ('$chofer_id', '$latitud', '$longitud', '$tiempo', '$tipo')";
+				} else {
+					$query = "UPDATE mab_posicion_chofer SET latitud = '$latitud', longitud = '$longitud', tiempo = '$tiempo', tipo = '$tipo' WHERE chofer_id = " . $chofer_id;
+				}
+				$result = mysql_query($query, $conexion);
+			}else{
+				echo "No hay conexión";
+			}
+			
 		}
+		mysql_close($conexion);
     }
     else 
 	{

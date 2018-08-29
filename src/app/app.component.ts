@@ -8,6 +8,7 @@ import { GlobalProvider } from "../providers/global/global";
 import { StatusBar } from '@ionic-native/status-bar';
 import { SplashScreen } from '@ionic-native/splash-screen';
 import { Storage } from '@ionic/storage';
+import { Insomnia } from '@ionic-native/insomnia';
 
 
 @Component({
@@ -25,7 +26,8 @@ export class MyApp {
 				public statusBar: StatusBar,
 				public splashScreen: SplashScreen,
 				private storage: Storage,
-				public global: GlobalProvider) {
+				public global: GlobalProvider,
+				public insomnia: Insomnia) {
 		
 		this.initializeApp();
 		// set our app's pages
@@ -41,6 +43,11 @@ export class MyApp {
 			// Here you can do any higher level native things you might need.
 			this.statusBar.styleDefault();
 			this.splashScreen.hide();
+			// Para que no se bloquee 
+			this.insomnia.keepAwake().then(
+				() => console.log('KeepAwake success'),
+				() => console.log('KeepAwake Error')
+			);
 			// Si tiene algo la sesion
 			this.storage.get('user').then((val) => {
 				if(val){

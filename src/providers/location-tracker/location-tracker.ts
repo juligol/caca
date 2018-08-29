@@ -31,15 +31,7 @@ export class LocationTracker {
 				public geolocation: Geolocation,
 				private storage: Storage,
 				public global: GlobalProvider) {
-					
-		this.config = {
-			desiredAccuracy: 0,
-			stationaryRadius: 0,
-			distanceFilter: 0,
-			debug: false,
-			//stopOnTerminate: false,
-			interval: 2000
-		};		
+							
 	}
 	
 	startTracking() {
@@ -48,23 +40,31 @@ export class LocationTracker {
 	}
 	
 	backgroundTracking(){
-		// Background Tracking
-		this.backgroundGeolocation.configure(this.config).subscribe((location: BackgroundGeolocationResponse) => {
-			this.zone.run(() => {
-				this.storage.get('user').then((user) => {
+		this.storage.get('user').then((user) => {
+			this.config = {
+				desiredAccuracy: 0,
+				stationaryRadius: 0,
+				distanceFilter: 0,
+				debug: false,
+				stopOnTerminate: false,
+				url: this.global.link + '?chofer_id=' + user.id,
+				interval: 2000
+			};
+			// Background Tracking
+			this.backgroundGeolocation.configure(this.config).subscribe((location: BackgroundGeolocationResponse) => {
+				this.zone.run(() => {
 					var posicionNueva = {lat: location.latitude, lng: location.longitude};
 					var fechaNueva = this.global.getFecha(location.time);
 					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Back");
 				});
+			}, 
+			(error) => {
+				this.global.mensaje("Error en background! ", error);
+				//this.global.showError("Oooops! Error en background!");
 			});
-		}, 
-		(error) => {
-			this.global.mensaje("Error en background! ", error);
-			//this.global.showError("Oooops! Error en background!");
+			// Turn ON the background-geolocation system.
+			this.backgroundGeolocation.start();
 		});
-		
-		// Turn ON the background-geolocation system.
-		this.backgroundGeolocation.start();
 	}
 	
 	foregroundTracking(){

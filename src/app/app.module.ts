@@ -11,6 +11,7 @@ import { IonicStorageModule } from '@ionic/storage';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 import { BackgroundGeolocation } from '@ionic-native/background-geolocation';
 import { Geolocation } from '@ionic-native/geolocation';
+import { Insomnia } from '@ionic-native/insomnia';
 
 //------------------------------ Providers ----------------------------------------
 import { LocationTracker } from '../providers/location-tracker/location-tracker';
@@ -61,6 +62,7 @@ import { Password } from '../pages/password/password';
 	Geolocation,
     GlobalProvider,
     ViajesProvider,
+	Insomnia
   ]
 })
 
