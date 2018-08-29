@@ -102,7 +102,7 @@
 				$longitud = $posicion->longitude;
 				//SELECT FROM_UNIXTIME( $posicion->time * 0.001 )
 				$tiempo = date('Y-m-d H:i:s', $posicion->time  * 0.001);
-				$tipo = 'Back';
+				$tipo = 'Back PHP';
 				$sql = "SELECT * FROM mab_posicion_chofer WHERE chofer_id = " . $chofer_id;
 				$res = mysql_query($sql, $conexion);
 				$cant = mysql_num_rows($res);

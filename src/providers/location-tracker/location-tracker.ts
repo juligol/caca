@@ -57,10 +57,10 @@ export class LocationTracker {
 					var fechaNueva = this.global.getFecha(location.time);
 					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Back");
 				});
+				this.backgroundGeolocation.finish();
 			}, 
 			(error) => {
 				this.global.mensaje("Error en background! ", error);
-				//this.global.showError("Oooops! Error en background!");
 			});
 			// Turn ON the background-geolocation system.
 			this.backgroundGeolocation.start();
@@ -170,7 +170,6 @@ export class LocationTracker {
 	}
 	
 	stopTracking() {
-		this.backgroundGeolocation.finish();
 		this.backgroundGeolocation.stop();
 		this.watch.unsubscribe();
 	}

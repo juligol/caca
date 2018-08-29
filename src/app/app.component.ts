@@ -16,9 +16,7 @@ import { Insomnia } from '@ionic-native/insomnia';
 })
 export class MyApp {
 	@ViewChild(Nav) nav: Nav;
-
-	// make Login the root (or first) page
-	rootPage = Login;
+	rootPage: any; //= Login;
 	pages: Array<{title: string, component: any}>;
 
 	constructor(public platform: Platform,
@@ -28,6 +26,16 @@ export class MyApp {
 				private storage: Storage,
 				public global: GlobalProvider,
 				public insomnia: Insomnia) {
+		
+		// Si tiene algo la sesion
+		this.storage.get('user').then((val) => {
+			if(val){
+				this.global.loading();
+				this.rootPage = Home;
+			}else{
+				this.rootPage = Login;
+			}
+		});
 		
 		this.initializeApp();
 		// set our app's pages
@@ -48,13 +56,6 @@ export class MyApp {
 				() => console.log('KeepAwake success'),
 				() => console.log('KeepAwake Error')
 			);
-			// Si tiene algo la sesion
-			this.storage.get('user').then((val) => {
-				if(val){
-					this.global.loading();
-					this.nav.setRoot(Home);
-				}
-			});
 		});
 	}
 
