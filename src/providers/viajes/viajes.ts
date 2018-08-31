@@ -48,8 +48,8 @@ export class ViajesProvider {
 		this.items = [];
 		for (var i = 0; i < this.contador; i++) {
 			var viaje = viajes[i];
-			if(this.locationTracker.isTracking[viaje.id])
-				viaje.en_proceso = 1;
+			if(!this.locationTracker.viajes.includes(viaje.id) && viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0)
+				this.locationTracker.inicializarArrays(viaje.id);
 			this.items.push(viaje);
 		}
 	}

@@ -34,8 +34,8 @@ export class Home{
 			console.log('Hola ' + val.nombre);
 		});
 		
-		this.encenderGPS();
-		//this.locationTracker.startTracking();
+		//this.encenderGPS();
+		this.locationTracker.startTracking();
 		
 		this.viajesProvider.cargarViajes();
 		
@@ -109,8 +109,8 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		this.verificarGPS(event, item);
-		//this.irAlViaje(item);
+		//this.verificarGPS(event, item);
+		this.irAlViaje(item);
 	}
 	
 	verificarGPS(event, item){
@@ -132,7 +132,10 @@ export class Home{
 	}
 	
 	irAlViaje(item){
-		//this.locationTracker.startTracking();
+		if(!this.locationTracker.encendido)
+			this.locationTracker.startTracking();
+		else
+			console.log('Back y front activos');
 		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 }

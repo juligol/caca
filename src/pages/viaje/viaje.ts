@@ -152,20 +152,41 @@ export class Viaje {
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			let distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, distancia);
-			//this.global.showSuccess(this.locationTracker.distancias[this.id].length);
-			if (this.locationTracker.distancias[this.id].length > 2 && this.locationTracker.distancias[this.id].length == this.locationTracker.latitudes[this.id].length && 
-				this.locationTracker.latitudes[this.id].length == this.locationTracker.longitudes[this.id].length && this.locationTracker.longitudes[this.id].length == this.locationTracker.fechas[this.id].length) {
-				this.guardarViaje();
-			}else{
-				this.reiniciarViaje();
-			}
+			setTimeout(() => {this.calcularDistanciaFinal();}, 1000);
 		}).catch((error) => {
 			console.log('Error getting location', error);
 			this.global.showError("Oooops! Error obteniendo posicion actual!");
 		});
 	}
 	
-	guardarViaje(){
+	calcularDistanciaFinal(){
+		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.id});
+		this.global.http.post(this.global.link, myData).subscribe(data => {
+			this.locationTracker.eliminarDatosViaje(this.id);
+			let distancia = JSON.parse(data["_body"]);
+			if(distancia > 0){
+				this.verificarCierreViaje();
+			}else{
+				this.reiniciarViaje();
+			}
+		}, 
+		error => {
+			this.global.showError("Oooops! Por favor intente de nuevo!");
+		});
+	}
+	
+	verificarCierreViaje(){
+		if(this.viajeActual.fechaValida){
+			this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
+			this.cargando = true;
+		}
+		else{
+			this.navCtrl.setRoot(Home);
+			this.cargando = false;
+		}
+	}
+	
+	/*guardarViaje(){
 		let latitudess = this.locationTracker.latitudes[this.id].join('|'); 
 		let longitudess = this.locationTracker.longitudes[this.id].join('|'); 
 		let distanciass = this.locationTracker.distancias[this.id].join('|'); 
@@ -185,7 +206,7 @@ export class Viaje {
 		error => {
 			this.global.showError("Oooops! Por favor intente de nuevo!");
 		});
-	}
+	}*/
 	
 	reiniciarViaje(){
 		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.id});

@@ -8,6 +8,7 @@ import { Storage } from '@ionic/storage';
 @Injectable()
 export class LocationTracker {
 	
+	public encendido: Boolean = false;
 	public watch: any;
 	public latitud: any;
 	public longitud: any;
@@ -19,12 +20,12 @@ export class LocationTracker {
 	public ultima_fecha		= [];
 	public ultima_posicion 	= [];
 	
-	public fechas 			= [];
+	/*public fechas 			= [];
 	public latitudes	 	= [];
 	public longitudes 		= [];
 	public distancias		= [];
 	
-	public isTracking: Array<Boolean> = [];
+	public isTracking: Array<Boolean> = [];*/
 
 	constructor(public zone: NgZone,
 				public backgroundGeolocation: BackgroundGeolocation, 
@@ -89,21 +90,23 @@ export class LocationTracker {
 	
 	inicializarArrays(id){
 		this.viajes.push(id);
+		console.log(this.viajes);
 		this.inicializar(id);
 	}
 	
 	inicializar(id){
 		this.ultima_posicion[id] = null;
 		this.ultima_fecha[id] = null;
-		this.isTracking[id] = false;
+		/*this.isTracking[id] = false;
 		
 		this.fechas[id] = [];
 		this.latitudes[id] = [];
 		this.longitudes[id] = [];
-		this.distancias[id] = [];
+		this.distancias[id] = [];*/
 	}
 	
 	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
+		this.encendido = true;
 		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.latitud = posicionNueva.lat;
@@ -127,7 +130,7 @@ export class LocationTracker {
 		if(posicionVieja){
 			var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
-			if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
+			if(distancia > 0 /*100 metros*/ && tiempo >= 0 /*2 minutos*/){
 				this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
 			}
 		}
@@ -151,11 +154,11 @@ export class LocationTracker {
 		console.log(this.viajes);
 		console.log(this.ultima_fecha);
 		console.log(this.ultima_posicion);
-		console.log(this.isTracking);
+		/*console.log(this.isTracking);
 		console.log(this.fechas);
 		console.log(this.latitudes);
 		console.log(this.longitudes);
-		console.log(this.distancias);
+		console.log(this.distancias);*/
 	}
 	
 	guardarEnArrays(id, fecha, posicion, distancia){
@@ -163,12 +166,12 @@ export class LocationTracker {
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.ultima_fecha[id] = fecha;
 			this.ultima_posicion[id] = posicion;
-			this.isTracking[id] = true;
+			/*this.isTracking[id] = true;
 			
 			this.fechas[id].push(fecha);
 			this.latitudes[id].push(posicion.lat);
 			this.longitudes[id].push(posicion.lng);
-			this.distancias[id].push(distancia);
+			this.distancias[id].push(distancia);*/
 			
 			this.loguear();
 		},
@@ -180,5 +183,6 @@ export class LocationTracker {
 	stopTracking() {
 		this.backgroundGeolocation.stop();
 		this.watch.unsubscribe();
+		this.encendido = false;
 	}
 }
