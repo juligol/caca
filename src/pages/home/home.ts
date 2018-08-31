@@ -132,7 +132,10 @@ export class Home{
 	}
 	
 	irAlViaje(item){
-		this.locationTracker.startTracking();
+		if(!this.locationTracker.encendido)
+			this.locationTracker.startTracking();
+		else
+			console.log('activo');
 		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 }

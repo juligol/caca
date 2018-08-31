@@ -8,6 +8,7 @@ import { Storage } from '@ionic/storage';
 @Injectable()
 export class LocationTracker {
 	
+	public encendido: Boolean = false;
 	public watch: any;
 	public latitud: any;
 	public longitud: any;
@@ -104,6 +105,7 @@ export class LocationTracker {
 	}
 	
 	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
+		this.encendido = true;
 		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.latitud = posicionNueva.lat;
