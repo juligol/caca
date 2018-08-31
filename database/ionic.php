@@ -22,28 +22,28 @@
     $postdata = file_get_contents("php://input");
     if (isset($postdata)) {
 		$request = json_decode($postdata);
+		//Produccion
+		/*$host = "127.0.0.1:3306";
+		$db = "QKBZ9X5Wht6b94Dw";
+		$user = "233205_mab";
+		$pass = "mabmobile";*/
+		//Testeo
+		$host = "127.0.0.1:3306";
+		$db = "233205-pre";
+		$user = "mab";
+		$pass = "YwXauBEtRLPNrhL9";
+
+		//Me conecto a la bd
+		$conexion = mysql_connect($host, $user, $pass) or die ("No se conectó a la base de datos");
+		mysql_select_db($db, $conexion) or die ("No se encontró la base de datos.");
+		mysql_query("SET NAMES 'utf8'");
+		mb_http_output('UTF-8');
+		header( 'Content-Type: text/html; charset=utf-8');
+		ini_set("display_errors", 0);
+		
         $action = $request->action;
 		if ($action != null)
 		{ 
-			//Produccion
-			/*$host = "127.0.0.1:3306";
-			$db = "QKBZ9X5Wht6b94Dw";
-			$user = "233205_mab";
-			$pass = "mabmobile";*/
-			//Testeo
-			$host = "127.0.0.1:3306";
-			$db = "233205-pre";
-			$user = "mab";
-			$pass = "YwXauBEtRLPNrhL9";
-
-			//Me conecto a la bd
-			$conexion = mysql_connect($host, $user, $pass) or die ("No se conectó a la base de datos");
-			mysql_select_db($db, $conexion) or die ("No se encontró la base de datos.");
-			mysql_query("SET NAMES 'utf8'");
-			mb_http_output('UTF-8');
-			header( 'Content-Type: text/html; charset=utf-8');
-			ini_set("display_errors", 0);
-			
 			switch ($action) {
 				case 'login':
 					$res = login($request, $conexion);
@@ -53,20 +53,12 @@
 					$res = password($request, $conexion);
 					echo json_encode($res);
 					break;
-				case 'get_viaje':
-					$res = get_viaje($request, $conexion);
-					echo json_encode($res);
-					break;
 				case 'viajes':
 					$res = viajes($request, $conexion);
 					echo json_encode($res);
 					break;
-				case 'guardarDirecciones':
-					$res = guardarDirecciones($request, $conexion);
-					echo $res;
-					break;
-				case 'distanciaTotal':
-					$res = distanciaTotal($request, $conexion);
+				case 'actualizarPosicion':
+					$res = actualizarPosicion($request, $conexion);
 					echo $res;
 					break;
 				case 'rechazarViaje':
@@ -81,20 +73,47 @@
 					$res = reiniciarViaje($request, $conexion);
 					echo $res;
 					break;
+				case 'guardarDireccion':
+					$res = guardarDireccion($request, $conexion);
+					echo $res;
+					break;
+				case 'guardarDirecciones':
+					$res = guardarDirecciones($request, $conexion);
+					echo $res;
+					break;
+				case 'distanciaTotal':
+					$res = distanciaTotal($request, $conexion);
+					echo $res;
+					break;
 				case 'cerrarViaje':
 					$res = cerrarViaje($request, $conexion);
 					echo $res;
 					break;
+				case 'get_viaje':
+					$res = get_viaje($request, $conexion);
+					echo json_encode($res);
+					break;
 				default:
 					break;
 			}
-			
-			mysql_close($conexion);
 		}
 		else 
 		{
-			echo "No hay conexión";
+			$posicion = $request[0];
+			if($posicion->provider == "network" && isset($_GET['chofer_id'])){
+				$chofer_id = $_GET['chofer_id'];
+				$latitud = $posicion->latitude;
+				$longitud = $posicion->longitude;
+				//SELECT FROM_UNIXTIME( $posicion->time * 0.001 )
+				$tiempo = date('Y-m-d H:i:s', $posicion->time  * 0.001);
+				$tipo = 'Back PHP';
+				$result = actualizarPosicionEnDB($conexion, $chofer_id, $latitud, $longitud, $tiempo, $tipo);
+			}else{
+				echo "No hay conexión";
+			}
+			
 		}
+		mysql_close($conexion);
     }
     else 
 	{
@@ -128,42 +147,6 @@
 			mail($desti, $asunto, $mensaje, $cabeceras);
 		}
 		return $usuario;
-	}
-	
-	function viajes($request, $conexion)
-	{
-		$viajes = [];
-		$chofer_id = $request->chofer_id;
-		$query = "SELECT * FROM mab_viajes where id_chofer = $chofer_id AND status in (1, 2, 3, 5, 6, 7, 8, 11) ORDER BY fecha DESC, hora DESC";
-		$result = mysql_query($query, $conexion);
-		while($viaje = mysql_fetch_array($result)){
-			$viaje = completarViaje($viaje, $conexion);
-			array_push($viajes, $viaje);
-		}
-		return $viajes;
-	}
-	
-	function rechazarViaje($request, $conexion)
-	{
-		$viaje_id = $request->viaje_id;
-		$chofer = $request->chofer;
-		$chofer_id = $request->chofer_id;
-		$proveedor = $request->proveedor;
-		$query = "UPDATE mab_viajes SET id_chofer = NULL, chofer = NULL WHERE id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
-		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'PROVEEDOR' AND estado = 'ACTIVO' AND proveedor = '$proveedor' AND id <> '$chofer_id'";
-		$result = mysql_query($query, $conexion);
-		while($prov = mysql_fetch_array($result)){
-			$nombre = $prov["nombre"];
-			$desti = $prov["usuario"];
-			$asunto = "Viaje rechazado desde APP";
-			$mensaje = "Sr. " . $nombre . " el viaje con ID ". $viaje_id ." fue rechazado por el chofer ". $chofer ." <br><br> Muchas gracias. ";
-			$cabeceras = 'MIME-Version: 1.0' . "\r\n";
-			$cabeceras .= 'Content-type: text/html; charset=utf-8' . "\r\n";
-			$cabeceras .= "From: MAB Mobile - Remises <envios@mabmobile.com.ar> \r\n";
-			mail($desti, $asunto, $mensaje, $cabeceras);
-		}
-		return "Exito al rechazar el viaje";
 	}
 	
 	function completarViaje($viaje, $conexion){
@@ -229,19 +212,120 @@
 		return $viaje;
 	}
 	
+	function viajes($request, $conexion)
+	{
+		$viajes = [];
+		$chofer_id = $request->chofer_id;
+		$query = "SELECT * FROM mab_viajes where id_chofer = $chofer_id AND status in (1, 2, 3, 5, 6, 7, 8, 11) ORDER BY fecha DESC, hora DESC";
+		$result = mysql_query($query, $conexion);
+		while($viaje = mysql_fetch_array($result)){
+			$viaje = completarViaje($viaje, $conexion);
+			array_push($viajes, $viaje);
+		}
+		return $viajes;
+	}
+	
+	function actualizarPosicionEnDB($conexion, $chofer_id, $latitud, $longitud, $tiempo, $tipo)
+	{
+		/*session_start();
+		$_SESSION["1442"] = $request;*/
+		$sql = "SELECT * FROM mab_posicion_chofer WHERE chofer_id = " . $chofer_id;
+		$res = mysql_query($sql, $conexion);
+		$cant = mysql_num_rows($res);
+		if ($cant == 0) {
+			$query = "INSERT INTO mab_posicion_chofer (chofer_id, latitud, longitud, tiempo, tipo) VALUES ('$chofer_id', '$latitud', '$longitud', '$tiempo', '$tipo')";
+		} else {
+			$query = "UPDATE mab_posicion_chofer SET latitud = '$latitud', longitud = '$longitud', tiempo = '$tiempo', tipo = '$tipo' WHERE chofer_id = " . $chofer_id;
+		}
+		$result = mysql_query($query, $conexion);
+		return $result;
+	}
+	
+	function actualizarPosicion($request, $conexion)
+	{
+		/*session_start();
+		$_SESSION["1442"] = $request;*/
+		$chofer_id = $request->chofer_id;
+		$latitud = $request->latitud;
+		$longitud = $request->longitud;
+		$tiempo = $request->tiempo;
+		$tipo = $request->tipo;
+		return actualizarPosicionEnDB($conexion, $chofer_id, $latitud, $longitud, $tiempo, $tipo);
+	}
+	
+	function rechazarViaje($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$chofer = $request->chofer;
+		$chofer_id = $request->chofer_id;
+		$proveedor = $request->proveedor;
+		$query = "UPDATE mab_viajes SET id_chofer = NULL, chofer = NULL WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		$query = "SELECT * FROM mab_usuarios WHERE categoria = 'PROVEEDOR' AND estado = 'ACTIVO' AND proveedor = '$proveedor' AND id <> '$chofer_id'";
+		$result = mysql_query($query, $conexion);
+		while($prov = mysql_fetch_array($result)){
+			$nombre = $prov["nombre"];
+			$desti = $prov["usuario"];
+			$asunto = "Viaje rechazado desde APP";
+			$mensaje = "Sr. " . $nombre . " el viaje con ID ". $viaje_id ." fue rechazado por el chofer ". $chofer ." <br><br> Muchas gracias. ";
+			$cabeceras = 'MIME-Version: 1.0' . "\r\n";
+			$cabeceras .= 'Content-type: text/html; charset=utf-8' . "\r\n";
+			$cabeceras .= "From: MAB Mobile - Remises <envios@mabmobile.com.ar> \r\n";
+			mail($desti, $asunto, $mensaje, $cabeceras);
+		}
+		return "Exito al rechazar el viaje";
+	}
+	
+	function viaje_en_proceso($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$query = "UPDATE mab_viajes SET en_proceso = 1 WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return "Exito al poner el viaje en proceso";
+	}
+
+	function reiniciarViaje($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$query = "DELETE FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		$query = "UPDATE mab_viajes SET en_proceso = 0 WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		return "Exito al reinicir el viaje";
+	}
+	
+	function guardarDireccionEnDB($conexion, $viaje_id, $latitud, $longitud, $distancia, $fecha)
+	{
+		$query = "UPDATE mab_viajes SET en_proceso = 1 WHERE id = " . $viaje_id;
+		$result = mysql_query($query, $conexion);
+		
+		$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitud', '$distancia', '$fecha')";
+		$result = mysql_query($query, $conexion);
+		return $result;
+	}
+	
+	function guardarDireccion($request, $conexion)
+	{
+		$viaje_id = $request->viaje_id;
+		$latitud = $request->latitud;
+		$longitud = $request->longitud;
+		$distancia = $request->distancia;
+		$fecha = $request->fecha;
+		return guardarDireccionEnDB($conexion, $viaje_id, $latitud, $longitud, $distancia, $fecha);
+	}
+	
 	function guardarDirecciones($request, $conexion)
 	{
 		$viaje_id = $request->viaje_id;
-		$distancias = explode('|', $request->distancias);
 		$latitudes = explode('|', $request->latitudes);
 		$longitudes = explode('|', $request->longitudes);
+		$distancias = explode('|', $request->distancias);
 		$fechas = explode('|', $request->fechas);
         $distanciaTotal = 0;
 		$i = 0;
 		foreach($latitudes as $latitud)
 		{
-			$query = "INSERT INTO mab_viaje_en_proceso (viaje_id, latitud, longitud, distancia, tiempo) VALUES ('$viaje_id', '$latitud', '$longitudes[$i]', '$distancias[$i]', '$fechas[$i]')";
-			$result = mysql_query($query, $conexion);
+			guardarDireccionEnDB($conexion, $viaje_id, $latitud, $longitudes[$i], $distancias[$i], $fechas[$i]);
 			$distanciaTotal += $distancias[$i];
 			$i++;
 		}
@@ -273,24 +357,6 @@
 		return $viaje;
 	}
 	
-	function viaje_en_proceso($request, $conexion)
-	{
-		$viaje_id = $request->viaje_id;
-		$query = "UPDATE mab_viajes SET en_proceso = 1 WHERE id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
-		return "Exito al poner el viaje en proceso";
-	}
-
-	function reiniciarViaje($request, $conexion)
-	{
-		$viaje_id = $request->viaje_id;
-		$query = "DELETE FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
-		$query = "UPDATE mab_viajes SET en_proceso = 0 WHERE id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
-		return "Exito al reinicir el viaje";
-	}
-
 	function cerrarViaje($request, $conexion)
 	{
 		$viaje = $request->viaje;

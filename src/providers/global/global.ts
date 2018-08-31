@@ -2,24 +2,11 @@ import { Injectable } from '@angular/core';
 import { LoadingController } from 'ionic-angular';
 import { Http } from '@angular/http';
 import { AlertController } from 'ionic-angular';
-import { Subscription } from 'rxjs/Subscription';
 
 @Injectable()
 export class GlobalProvider {
 	public loader: any;
 	public link: string;
-	public intervalos = [];
-	public fecha: any;
-	public markers		= [];
-	public ultima_fecha	= [];
-	public fechas 		= [];
-	//public rutas 		= [];
-	public posiciones 	= [];
-	public latitudes 	= [];
-	public longitudes 	= [];
-	public distancias	= [];
-	public primeraVez: Array<Boolean> = [];
-	public subscriptions: Array<Subscription> = [];
 	public tzoffset;
 	
 	constructor(public loadingCtrl: LoadingController,
@@ -58,11 +45,36 @@ export class GlobalProvider {
 		alert.present();
 	}
 	
+	mensaje(titulo, texto) {
+		let alert = this.alertCtrl.create({
+			title: titulo,
+			subTitle: texto,
+			buttons: ['OK']
+		});
+		alert.present();
+	}
+	
 	getFechaActual(){
 		return new Date(Date.now() - this.tzoffset).toISOString().slice(0, -1).replace('T', ' ');
 	}
 	
 	getFecha(fecha){ 
 		return new Date(fecha - this.tzoffset).toISOString().slice(0, -1).replace('T', ' ');
+	}
+	
+	calcularDistanciaEntre(lat1:number, lat2:number, long1:number, long2:number){
+		let p = 0.017453292519943295;    // Math.PI / 180
+		let c = Math.cos;
+		let a = 0.5 - c((lat1-lat2) * p) / 2 + c(lat2 * p) *c((lat1) * p) * (1 - c(((long1- long2) * p))) / 2;
+		let dis = (12742 * Math.asin(Math.sqrt(a))); // 2 * R; R = 6371 km
+		return dis;
+	}
+	
+	calcularTiempoEntre(fechaVieja, fechaNueva){
+		var fechaInicio = new Date(fechaVieja).getTime();
+		var fechaFin    = new Date(fechaNueva).getTime();
+		var diff = fechaFin - fechaInicio;
+		// (1000*60*60*24) --> milisegundos -> segundos -> minutos -> horas -> días
+		return ( diff/(1000*60) ); // para devolver en minutos
 	}
 }

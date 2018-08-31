@@ -1,57 +1,73 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BackgroundGeolocation, BackgroundGeolocationConfig/*, BackgroundGeolocationResponse*/ } from '@ionic-native/background-geolocation';
+import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocationResponse } from '@ionic-native/background-geolocation';
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import 'rxjs/add/operator/filter';
 import { GlobalProvider } from "../global/global";
+import { Storage } from '@ionic/storage';
 
-/*
-  Generated class for the LocationTrackerProvider provider.
-
-  See https://angular.io/guide/dependency-injection for more info on providers
-  and Angular DI.
-*/
 @Injectable()
 export class LocationTracker {
 	
-	public posiciones: string[];
-	watch: any;
-	public isTracking: Boolean;
+	public watch: any;
+	public latitud: any;
+	public longitud: any;
+	public tiempo: any;
+	public config: BackgroundGeolocationConfig;
+	public marker: any = null;
+	
+	public viajes 			= [];
+	public ultima_fecha		= [];
+	public ultima_posicion 	= [];
+	
+	public fechas 			= [];
+	public latitudes	 	= [];
+	public longitudes 		= [];
+	public distancias		= [];
+	
+	public isTracking: Array<Boolean> = [];
 
 	constructor(public zone: NgZone,
 				public backgroundGeolocation: BackgroundGeolocation, 
 				public geolocation: Geolocation,
+				private storage: Storage,
 				public global: GlobalProvider) {
-		
-		this.resetTracking();
-		this.isTracking = false;
+							
 	}
 	
 	startTracking() {
-		this.isTracking = true;
-		
-		// Background Tracking		
-		const config: BackgroundGeolocationConfig = {
-			desiredAccuracy: 0,
-			stationaryRadius: 20,
-			distanceFilter: 10,
-			debug: true,
-			interval: 2000
-			//stopOnTerminate: false
-		};
-		
-		this.backgroundGeolocation.configure(config).subscribe((location) => {
-			this.posiciones.push('Back:  ' + location.latitude + ', ' + location.longitude);
-			// Update inside of Angular's zone
-			this.zone.run(() => {
-				this.posiciones.push('Back:  ' + location.latitude + ', ' + location.longitude);
+		this.backgroundTracking();
+		this.foregroundTracking();
+	}
+	
+	backgroundTracking(){
+		this.storage.get('user').then((user) => {
+			this.config = {
+				desiredAccuracy: 0,
+				stationaryRadius: 0,
+				distanceFilter: 0,
+				debug: false,
+				stopOnTerminate: false,
+				url: this.global.link + '?chofer_id=' + user.id,
+				interval: 2000
+			};
+			// Background Tracking
+			this.backgroundGeolocation.configure(this.config).subscribe((location: BackgroundGeolocationResponse) => {
+				this.zone.run(() => {
+					var posicionNueva = {lat: location.latitude, lng: location.longitude};
+					var fechaNueva = this.global.getFecha(location.time);
+					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Back");
+				});
+				this.backgroundGeolocation.finish();
+			}, 
+			(error) => {
+				this.global.mensaje("Error en background!", error);
 			});
-		}, 
-		(err) => {
-			this.global.showError("Oooops! Error en background!");
+			// Turn ON the background-geolocation system.
+			this.backgroundGeolocation.start();
 		});
-		// Turn ON the background-geolocation system.
-		this.backgroundGeolocation.start();
-		
+	}
+	
+	foregroundTracking(){
 		// Foreground Tracking
 		let options = {
 			frequency: 3000,
@@ -59,19 +75,110 @@ export class LocationTracker {
 		};
 		this.watch = this.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
 			this.zone.run(() => {
-				this.posiciones.push('Front:  ' + position.coords.latitude + ', ' + position.coords.longitude);
+				this.storage.get('user').then((user) => {
+					var posicionNueva = {lat: position.coords.latitude, lng: position.coords.longitude};
+					var fechaNueva = this.global.getFecha(position.timestamp);
+					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Front");
+				},
+				error => {
+					this.global.mensaje("Error en WatchPosition!", error);
+				});
 			});
 		});
 	}
 	
-	stopTracking() {
-		//this.backgroundGeolocation.stop();
-		this.backgroundGeolocation.finish();
-		this.watch.unsubscribe();
-		this.isTracking = false;
+	inicializarArrays(id){
+		this.viajes.push(id);
+		this.inicializar(id);
 	}
 	
-	resetTracking() {
-		this.posiciones = [];
+	inicializar(id){
+		this.ultima_posicion[id] = null;
+		this.ultima_fecha[id] = null;
+		this.isTracking[id] = false;
+		
+		this.fechas[id] = [];
+		this.latitudes[id] = [];
+		this.longitudes[id] = [];
+		this.distancias[id] = [];
+	}
+	
+	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
+		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
+		this.global.http.post(this.global.link, myData).subscribe(data => {
+			this.latitud = posicionNueva.lat;
+			this.longitud = posicionNueva.lng;
+			this.tiempo = fechaNueva;
+			console.log(myData);
+			if(this.marker != null)
+				this.marker.setPosition({lat: this.latitud, lng: this.longitud});
+			
+			for (var i = 0; i < this.viajes.length; i++) {
+				this.guardarPosicion(this.viajes[i], fechaNueva, posicionNueva);
+			}
+		},
+		error => {
+			this.global.mensaje("Error actualizando la posicion!", error);
+		});
+	}
+	
+	guardarPosicion(id, fechaNueva, posicionNueva){
+		var posicionVieja = this.ultima_posicion[id];
+		if(posicionVieja){
+			var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+			var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
+			if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
+				this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
+			}
+		}
+	}
+	
+	eliminarViaje(id){
+		var index = this.viajes.indexOf(id);
+		if (index > -1) {
+		  this.viajes.splice(index, 1);
+		}
+	}
+	
+	eliminarDatosViaje(id){
+		//this.loguear();
+		this.eliminarViaje(id);
+		this.inicializar(id);
+		this.loguear();
+	}
+	
+	loguear(){
+		console.log(this.viajes);
+		console.log(this.ultima_fecha);
+		console.log(this.ultima_posicion);
+		console.log(this.isTracking);
+		console.log(this.fechas);
+		console.log(this.latitudes);
+		console.log(this.longitudes);
+		console.log(this.distancias);
+	}
+	
+	guardarEnArrays(id, fecha, posicion, distancia){
+		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
+		this.global.http.post(this.global.link, myData).subscribe(data => {
+			this.ultima_fecha[id] = fecha;
+			this.ultima_posicion[id] = posicion;
+			this.isTracking[id] = true;
+			
+			this.fechas[id].push(fecha);
+			this.latitudes[id].push(posicion.lat);
+			this.longitudes[id].push(posicion.lng);
+			this.distancias[id].push(distancia);
+			
+			this.loguear();
+		},
+		error => {
+			this.global.mensaje("Error guardando la posicion del viaje!", error);
+		});
+	}
+	
+	stopTracking() {
+		this.backgroundGeolocation.stop();
+		this.watch.unsubscribe();
 	}
 }
