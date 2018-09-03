@@ -314,7 +314,7 @@
 		return guardarDireccionEnDB($conexion, $viaje_id, $latitud, $longitud, $distancia, $fecha);
 	}
 	
-	function guardarDirecciones($request, $conexion)
+	/*function guardarDirecciones($request, $conexion)
 	{
 		$viaje_id = $request->viaje_id;
 		$latitudes = explode('|', $request->latitudes);
@@ -334,20 +334,24 @@
 			$result = mysql_query($query, $conexion);
 		}
 		return $distanciaTotal;
-	}
+	}*/
 	
 	function distanciaTotal($request, $conexion)
 	{
 		$viaje_id = $request->viaje_id;
-		$query = "SELECT SUM(distancia) as distancia FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
-		$result = mysql_fetch_array(mysql_query($query, $conexion));
-		$distancia = $result["distancia"];
-		$query = "UPDATE mab_viajes SET distancia_total_recorrida = '$distancia' WHERE id = " . $viaje_id;
-		$result = mysql_query($query, $conexion);
+		$distancia = 0;
+		$ultimoIngreso = guardarDireccionEnDB($conexion, $viaje_id, $request->latitud, $request->longitud, $request->distancia, $request->fecha);
+		if($ultimoIngreso){
+			$query = "SELECT SUM(distancia) as distancia FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+			$result = mysql_fetch_array(mysql_query($query, $conexion));
+			$distancia = $result["distancia"];
+			$query = "UPDATE mab_viajes SET distancia_total_recorrida = '$distancia' WHERE id = " . $viaje_id;
+			$result = mysql_query($query, $conexion);
+		}
 		return $distancia;
 	}
 	
-	function get_viaje($request, $conexion)
+	/*function get_viaje($request, $conexion)
 	{
 		$viaje_id = $request->viaje_id;
 		$query = "SELECT * FROM mab_viajes WHERE id = " . $viaje_id;
@@ -355,7 +359,7 @@
 		$viaje = mysql_fetch_array($result);
 		$viaje = completarViaje($viaje, $conexion);
 		return $viaje;
-	}
+	}*/
 	
 	function cerrarViaje($request, $conexion)
 	{

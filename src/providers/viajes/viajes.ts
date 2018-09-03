@@ -48,8 +48,14 @@ export class ViajesProvider {
 		this.items = [];
 		for (var i = 0; i < this.contador; i++) {
 			var viaje = viajes[i];
-			if(!this.locationTracker.viajes.includes(viaje.id) && viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0)
-				this.locationTracker.inicializarArrays(viaje.id);
+			//Saco los viajes que quedaron colgado y no estan iniciados
+			if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
+				this.locationTracker.eliminarDatosViaje(viaje.id);
+			}
+			//Meto al cron un viaje que quedo iniciado
+			if(viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0 && !this.locationTracker.viajes.includes(viaje.id)){
+				this.locationTracker.cargarAlCron(viaje);
+			}
 			this.items.push(viaje);
 		}
 	}

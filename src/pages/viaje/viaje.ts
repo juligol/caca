@@ -151,19 +151,21 @@ export class Viaje {
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			let distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
-			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, distancia);
-			setTimeout(() => {this.calcularDistanciaFinal();}, 1000);
+			//Mando la ultima posicion con su fecha y distancia para que sincronize la ultima entrada a la BDs
+			this.ultimoIngresoYDistanciaFinal(fechaNueva, posicionNueva, distancia);
 		}).catch((error) => {
 			console.log('Error getting location', error);
 			this.global.showError("Oooops! Error obteniendo posicion actual!");
 		});
 	}
 	
-	calcularDistanciaFinal(){
-		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.id});
+	ultimoIngresoYDistanciaFinal(fecha, posicion, distancia){
+		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.locationTracker.eliminarDatosViaje(this.id);
-			let distancia = JSON.parse(data["_body"]);
+			let distancia = parseFloat(data["_body"]);
+			this.global.mensaje("Distancia total recorrida", distancia + " Km");
+			console.log("Distancia total recorrida: " + distancia + " Km");
 			if(distancia > 0){
 				this.verificarCierreViaje();
 			}else{
@@ -215,7 +217,6 @@ export class Viaje {
 			this.viajeActual.en_proceso = 0;
 			this.cargando = true;
 			this.global.loader.dismiss();
-			this.locationTracker.eliminarDatosViaje(this.id);
 		}, 
 		error => {
 			this.global.showError("Oooops! Por favor intente de nuevo!");
