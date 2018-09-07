@@ -155,7 +155,6 @@ export class LocationTracker {
 		this.eliminarViaje(id);
 		this.inicializar(id);
 		this.loguear();
-		//this.global.mensaje("Viajes!", this.viajes.join(", "));
 	}
 	
 	loguear(){
@@ -165,11 +164,14 @@ export class LocationTracker {
 	}
 	
 	guardarEnArrays(id, fecha, posicion, distancia){
+		this.ultima_fecha[id] = fecha;
+		this.ultima_posicion[id] = posicion;
+		this.loguear();
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
-			this.ultima_fecha[id] = fecha;
+			/*this.ultima_fecha[id] = fecha;
 			this.ultima_posicion[id] = posicion;
-			this.loguear();
+			this.loguear();*/
 		},
 		error => {
 			this.global.mensaje("Error guardando la posicion del viaje!", error);
