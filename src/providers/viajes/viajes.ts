@@ -49,13 +49,13 @@ export class ViajesProvider {
 		for (var i = 0; i < this.contador; i++) {
 			var viaje = viajes[i];
 			//Saco los viajes que quedaron colgado y no estan iniciados
-			if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
+			/*if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
 				this.locationTracker.eliminarDatosViaje(viaje.id);
 			}
 			//Meto al cron un viaje que quedo iniciado
 			if(viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0 && !this.locationTracker.viajes.includes(viaje.id)){
 				this.locationTracker.cargarAlCron(viaje);
-			}
+			}*/
 			this.items.push(viaje);
 		}
 	}

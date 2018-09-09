@@ -52,7 +52,7 @@ export class LocationTracker {
 				distanceFilter: 0,
 				debug: false,
 				stopOnTerminate: false,
-				url: this.global.link + '?chofer_id=' + user.id,
+				//url: this.global.link + '?chofer_id=' + user.id,
 				interval: 2000
 			};
 			// Background Tracking
@@ -164,14 +164,14 @@ export class LocationTracker {
 	}
 	
 	guardarEnArrays(id, fecha, posicion, distancia){
-		this.ultima_fecha[id] = fecha;
+		/*this.ultima_fecha[id] = fecha;
 		this.ultima_posicion[id] = posicion;
-		this.loguear();
+		this.loguear();*/
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
-			/*this.ultima_fecha[id] = fecha;
+			this.ultima_fecha[id] = fecha;
 			this.ultima_posicion[id] = posicion;
-			this.loguear();*/
+			this.loguear();
 		},
 		error => {
 			this.global.mensaje("Error guardando la posicion del viaje!", error);
