@@ -35,8 +35,11 @@ export class Home{
 		});
 		
 		if(!this.locationTracker.cronEncendido()){
-			this.encenderGPS();
-			//this.locationTracker.startTracking();
+			//TimeOut para que sincronize el loading con cargarViajes en pc
+			setTimeout(() => {
+				this.encenderGPS();
+				//this.locationTracker.startTracking();
+			}, 500);
 		}
 		
 		this.viajesProvider.cargarViajes();
@@ -44,7 +47,7 @@ export class Home{
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
 				if(parametros.cargando)
-					this.global.loader.dismiss();
+					this.global.stopLoading();
 				this.menuCtrl.enable(true);
 				var viaje_id = parametros.viaje.id;
 				this.viajesProvider.viajes = this.viajesProvider.viajes.map((item) => {
@@ -121,13 +124,13 @@ export class Home{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.global.loader.dismiss()
+					error => this.global.stopLoading()
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
 				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
 					() => this.irAlViaje(item),
-					error => this.global.loader.dismiss()
+					error => this.global.stopLoading()
 				);
 			}
 		});

@@ -11,11 +11,14 @@ import { LocationTracker } from "../../providers/location-tracker/location-track
 
 export class Logout {
 
-	constructor(public navCtrl: NavController, private storage: Storage, public locationTracker: LocationTracker){
+	constructor(public navCtrl: NavController, 
+				private storage: Storage, 
+				public locationTracker: LocationTracker){
+					
 		this.storage.get('user').then((val) => {
 			console.log('Cerrando sesión de: ' + val.nombre);
 		});
-		if(this.locationTracker.watch)
+		if(this.locationTracker.cronEncendido)
 			this.locationTracker.stopTracking();
 		this.storage.remove('user');
 		this.storage.get('user').then((val) => {

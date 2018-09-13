@@ -56,7 +56,7 @@ export class CerrarViaje{
 				this.navCtrl.setRoot(Home);
 			}, 
 			error => {
-				this.global.showError('Oooops! Por favor intente de nuevo!');
+				this.global.showMessage('Error al cerrar el viaje', error);
 			});
 		});
 	}

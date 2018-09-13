@@ -30,10 +30,10 @@ export class ViajesProvider {
 					this.viajes = viajes;
 					this.inicializarListado(this.viajes);
 				}
-				this.global.loader.dismiss();
+				this.global.stopLoading();
 			}, 
 			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
+				this.global.showMessage('Error obteniendo los viajes', error);
 			});
 		});
 	}
@@ -49,13 +49,13 @@ export class ViajesProvider {
 		for (var i = 0; i < this.contador; i++) {
 			var viaje = viajes[i];
 			//Saco los viajes que quedaron colgado y no estan iniciados
-			/*if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
+			if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
 				this.locationTracker.eliminarDatosViaje(viaje.id);
 			}
 			//Meto al cron un viaje que quedo iniciado
 			if(viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0 && !this.locationTracker.viajes.includes(viaje.id)){
 				this.locationTracker.cargarAlCron(viaje);
-			}*/
+			}
 			this.items.push(viaje);
 		}
 	}
@@ -121,15 +121,11 @@ export class ViajesProvider {
 			{
 				text: 'Cancelar',
 				role: 'cancel',
-				handler: () => {
-					this.global.loader.dismiss();
-				}
+				handler: () => {this.global.stopLoading();}
 			},
 			{
 				text: 'Aceptar',
-				handler: () => {
-					this.rechazarViaje(event, item);
-				}
+				handler: () => {this.rechazarViaje(event, item);}
 			}
 			]
 		});
@@ -143,7 +139,7 @@ export class ViajesProvider {
 				this.cargarViajes();
 			}, 
 			error => {
-				this.global.showError("Oooops! Por favor intente de nuevo!");
+				this.global.showMessage('Error al rechazar el viaje', error);
 			});
 		});
 	}

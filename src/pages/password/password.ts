@@ -29,17 +29,16 @@ export class Password{
 			var usuario = JSON.parse(data["_body"]);
 			if(usuario)
 			{
-				this.global.showSuccess("E-mail enviado correctamente!!");
+				this.global.showMessage("OK", "E-mail enviado correctamente!!");
 				this.navCtrl.setRoot(Login);
-				this.global.loader.dismiss();
 			}
 			else
 			{
-				this.global.showError("E-mail incorrecto!!");
+				this.global.showMessage("Error", "E-mail incorrecto!!");
 			}
 		}, 
 		error => {
-			this.global.showError('Oooops! Por favor intente de nuevo!');
+			this.global.showMessage("Error al enviar la password", error);
 		});
 	}
 	

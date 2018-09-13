@@ -41,11 +41,11 @@ export class Login {
 			}
 			else
 			{
-				this.global.showError("E-mail o contraseña incorrectos!!");
+				this.global.showMessage("Error", "E-mail o contraseña incorrectos!!");
 			}
 		}, 
 		error => {
-			this.global.showError('Oooops! Por favor intente de nuevo!');
+			this.global.showMessage('Error en login', error);
 		});
 	}
 	

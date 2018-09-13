@@ -6,6 +6,7 @@ import { AlertController } from 'ionic-angular';
 @Injectable()
 export class GlobalProvider {
 	public loader: any;
+	public isLoading: Boolean = false;
 	public link: string;
 	public tzoffset;
 	
@@ -23,29 +24,19 @@ export class GlobalProvider {
 			content: "Por favor espere...",
 		});
 		this.loader.present();
+		this.isLoading = true;
 	}
 	
-	showError(texto) {
-		if(this.loader)
-			this.loader.dismiss();
-		let alert = this.alertCtrl.create({
-			title: 'Error',
-			subTitle: texto,
-			buttons: ['OK']
-		});
-		alert.present();
+	stopLoading(){
+		this.loader.dismiss();
+		this.isLoading = false;
 	}
 	
-	showSuccess(texto) {
-		let alert = this.alertCtrl.create({
-			title: 'Éxito',
-			subTitle: texto,
-			buttons: ['OK']
-		});
-		alert.present();
-	}
-	
-	mensaje(titulo, texto) {
+	showMessage(titulo, texto) {
+		if(this.isLoading){
+			this.stopLoading();
+		}
+			
 		let alert = this.alertCtrl.create({
 			title: titulo,
 			subTitle: texto,

@@ -65,7 +65,7 @@ export class LocationTracker {
 				this.backgroundGeolocation.finish();
 			}, 
 			(error) => {
-				this.global.mensaje("Error en background!", error);
+				this.global.showMessage("Error en Background", error);
 			});
 			// Turn ON the background-geolocation system.
 			this.backgroundGeolocation.start();
@@ -86,7 +86,7 @@ export class LocationTracker {
 					this.actualizarPosicion(user.id, fechaNueva, posicionNueva, "Front");
 				},
 				error => {
-					this.global.mensaje("Error en WatchPosition!", error);
+					this.global.showMessage("Error en WatchPosition", error);
 				});
 			});
 		});
@@ -128,7 +128,7 @@ export class LocationTracker {
 			}
 		},
 		error => {
-			this.global.mensaje("Error actualizando la posicion!", error);
+			this.global.showMessage("Error actualizando la posicion", error);
 		});
 	}
 	
@@ -164,9 +164,9 @@ export class LocationTracker {
 	}
 	
 	guardarEnArrays(id, fecha, posicion, distancia){
-		/*this.ultima_fecha[id] = fecha;
+		this.ultima_fecha[id] = fecha;
 		this.ultima_posicion[id] = posicion;
-		this.loguear();*/
+		this.loguear();
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.ultima_fecha[id] = fecha;
@@ -174,7 +174,7 @@ export class LocationTracker {
 			this.loguear();
 		},
 		error => {
-			this.global.mensaje("Error guardando la posicion del viaje!", error);
+			this.global.showMessage("Error guardando la posicion del viaje", error);
 		});
 	}
 	

@@ -79,7 +79,7 @@ export class Viaje {
 				alert('No se pudieron cargar las direcciones debido a: ' + status);
 			}
 			//Esperar un cachito mas 
-			setTimeout(() => {this.global.loader.dismiss();}, 1000);
+			setTimeout(() => {this.global.stopLoading();}, 1000);
 		});  
 	}
 	
@@ -101,7 +101,7 @@ export class Viaje {
 			let fechaNueva = this.global.getFecha(pos.timestamp);
 			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, 0);
 		}).catch((error) => {
-			this.global.mensaje("Error obteniendo posicion!", error);
+			this.global.showMessage("Error al obtener la posicion inicial", error);
 		});
 	}
 	
@@ -154,8 +154,7 @@ export class Viaje {
 			//Mando la ultima posicion con su fecha y distancia para que sincronize la ultima entrada a la BDs
 			this.ultimoIngresoYDistanciaFinal(fechaNueva, posicionNueva, distancia);
 		}).catch((error) => {
-			console.log('Error getting location', error);
-			this.global.showError("Oooops! Error obteniendo posicion actual!");
+			this.global.showMessage("Error al obtener la posicion final", error);
 		});
 	}
 	
@@ -164,8 +163,8 @@ export class Viaje {
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.locationTracker.eliminarDatosViaje(this.id);
 			let distancia = parseFloat(data["_body"]);
-			this.global.mensaje("Distancia total recorrida", distancia + " Km");
-			console.log("Distancia total recorrida: " + distancia + " Km");
+			this.global.showMessage("Distancia total recorrida", distancia.toFixed(2) + " Km");
+			console.log("Distancia total recorrida: " + distancia.toFixed(2) + " Km");
 			if(distancia > 0){
 				this.verificarCierreViaje();
 			}else{
@@ -173,7 +172,7 @@ export class Viaje {
 			}
 		}, 
 		error => {
-			this.global.showError("Oooops! Por favor intente de nuevo!");
+			this.global.showMessage("Error al calcular la distancia final", error);
 		});
 	}
 	
@@ -216,10 +215,10 @@ export class Viaje {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.cargando = true;
-			this.global.loader.dismiss();
+			this.global.stopLoading();
 		}, 
 		error => {
-			this.global.showError("Oooops! Por favor intente de nuevo!");
+			this.global.showMessage("Error al reiniciar el viaje", error);
 		});
 	}
 }
