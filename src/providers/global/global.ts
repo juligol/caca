@@ -32,17 +32,20 @@ export class GlobalProvider {
 		this.isLoading = false;
 	}
 	
-	showMessage(titulo, texto) {
-		if(this.isLoading){
-			this.stopLoading();
-		}
-			
+	mensaje(titulo, texto) {
 		let alert = this.alertCtrl.create({
 			title: titulo,
 			subTitle: texto,
 			buttons: ['OK']
 		});
 		alert.present();
+	}
+	
+	showMessage(titulo, texto) {
+		if(this.isLoading){
+			this.stopLoading();
+		}
+		this.mensaje(titulo, texto);
 	}
 	
 	getFechaActual(){

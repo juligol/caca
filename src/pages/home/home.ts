@@ -34,6 +34,8 @@ export class Home{
 			console.log('Hola ' + val.nombre);
 		});
 		
+		this.viajesProvider.cargarViajes();
+
 		if(!this.locationTracker.cronEncendido()){
 			//TimeOut para que sincronize el loading con cargarViajes en pc
 			setTimeout(() => {
@@ -41,8 +43,6 @@ export class Home{
 				//this.locationTracker.startTracking();
 			}, 500);
 		}
-		
-		this.viajesProvider.cargarViajes();
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {

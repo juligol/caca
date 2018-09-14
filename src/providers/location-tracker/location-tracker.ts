@@ -134,7 +134,7 @@ export class LocationTracker {
 	
 	guardarPosicion(id, fechaNueva, posicionNueva){
 		var posicionVieja = this.ultima_posicion[id];
-		console.log(posicionVieja);
+		//console.log(posicionVieja);
 		if(posicionVieja){
 			var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
@@ -166,7 +166,6 @@ export class LocationTracker {
 	guardarEnArrays(id, fecha, posicion, distancia){
 		this.ultima_fecha[id] = fecha;
 		this.ultima_posicion[id] = posicion;
-		this.loguear();
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.ultima_fecha[id] = fecha;

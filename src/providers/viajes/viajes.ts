@@ -28,7 +28,7 @@ export class ViajesProvider {
 				if(viajes.length > 0)
 				{
 					this.viajes = viajes;
-					this.inicializarListado(this.viajes);
+					this.verificarViajesEIniciar(this.viajes);
 				}
 				this.global.stopLoading();
 			}, 
@@ -36,6 +36,23 @@ export class ViajesProvider {
 				this.global.showMessage('Error obteniendo los viajes', error);
 			});
 		});
+	}
+	
+	verificarViajesEIniciar(viajes){
+		for (var i = 0; i < viajes.length; i++) {
+			var viaje = viajes[i];
+			//Saco del cron los viajes que quedaron colgados y no estan iniciados
+			if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
+				console.log("Saco del cron: viaje " + viaje.id);
+				this.locationTracker.eliminarDatosViaje(viaje.id);
+			}
+			//Meto al cron los viajes que estan iniciados
+			if(viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0 && !this.locationTracker.viajes.includes(viaje.id)){
+				console.log("Meto al cron: viaje " + viaje.id);
+				this.locationTracker.cargarAlCron(viaje);
+			}
+		}
+		this.inicializarListado(viajes);
 	}
 	
 	inicializarListado(viajes){
@@ -47,16 +64,7 @@ export class ViajesProvider {
 		}
 		this.items = [];
 		for (var i = 0; i < this.contador; i++) {
-			var viaje = viajes[i];
-			//Saco los viajes que quedaron colgado y no estan iniciados
-			if(viaje.distancia_total_recorrida > 0 && this.locationTracker.viajes.includes(viaje.id)){
-				this.locationTracker.eliminarDatosViaje(viaje.id);
-			}
-			//Meto al cron un viaje que quedo iniciado
-			if(viaje.en_proceso == 1 && viaje.distancia_total_recorrida == 0 && !this.locationTracker.viajes.includes(viaje.id)){
-				this.locationTracker.cargarAlCron(viaje);
-			}
-			this.items.push(viaje);
+			this.items.push(viajes[i]);
 		}
 	}
 	

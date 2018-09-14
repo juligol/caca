@@ -163,8 +163,7 @@ export class Viaje {
 		this.global.http.post(this.global.link, myData).subscribe(data => {
 			this.locationTracker.eliminarDatosViaje(this.id);
 			let distancia = parseFloat(data["_body"]);
-			this.global.showMessage("Distancia total recorrida", distancia.toFixed(2) + " Km");
-			console.log("Distancia total recorrida: " + distancia.toFixed(2) + " Km");
+			this.global.mensaje("Distancia total recorrida", distancia.toFixed(2) + " Km");
 			if(distancia > 0){
 				this.verificarCierreViaje();
 			}else{
