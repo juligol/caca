@@ -24,7 +24,6 @@ export class Viaje {
 	map: any;
 	directionsService: any = null;
 	directionsDisplay: any = null;
-	//currentMapTrack: any = null;
 
 	constructor(private plt: Platform,
 				public navCtrl: NavController, 
@@ -53,15 +52,14 @@ export class Viaje {
   
 	ionViewDidLoad(){
 		this.plt.ready().then(() => {
-			let posicion_actual = {lat: this.locationTracker.latitud, lng: this.locationTracker.longitud};
 			let mapEle: HTMLElement = document.getElementById('map');
 			let panelEle: HTMLElement = document.getElementById('panel');
-			this.map = new google.maps.Map(mapEle, {center: posicion_actual, zoom: 12});
+			this.map = new google.maps.Map(mapEle, {center: this.locationTracker.posicionActual, zoom: 12});
 			this.directionsDisplay.setPanel(panelEle);
 			this.directionsDisplay.setMap(this.map);
 			mapEle.classList.add('show-map');
 			this.locationTracker.marker = new google.maps.Marker({map: this.map, title: 'Aqui estoy!'});
-			this.locationTracker.marker.setPosition(posicion_actual);
+			this.locationTracker.marker.setPosition(this.locationTracker.posicionActual);
 			this.mostrarRutaEntre(this.viajeActual.origen, this.viajeActual.destino);
 		});
 	}
@@ -83,16 +81,6 @@ export class Viaje {
 		});  
 	}
 	
-	/*armarTrayecto(){
-		let puntos_trayecto = this.viajeActual.puntos_trayecto;
-		var trayecto = [];
-		//console.log(puntos_trayecto);
-		for (var i = 0; i < puntos_trayecto.length; i++) {
-			trayecto.push({lat: Number(puntos_trayecto[i].latitud), lng: Number(puntos_trayecto[i].longitud)});
-		}
-		return trayecto;
-	}*/
-	
 	comenzarViaje() {
 		this.viajeActual.en_proceso = 1;
 		this.locationTracker.inicializarArrays(this.id);
@@ -104,22 +92,6 @@ export class Viaje {
 			this.global.showMessage("Error al obtener la posicion inicial", error);
 		});
 	}
-	
-	/*redrawPath(path) {
-		if (this.currentMapTrack) {
-		  this.currentMapTrack.setMap(null);
-		}
-		if (path.length > 1) {
-		  this.currentMapTrack = new google.maps.Polyline({
-			path: path,
-			geodesic: true,
-			strokeColor: '#ff00ff',
-			strokeOpacity: 1.0,
-			strokeWeight: 3
-		  });
-		  this.currentMapTrack.setMap(this.map);
-		}
-	}*/
 	
 	finalizarViaje() {
 		let alert = this.alertCtrl.create({
@@ -185,28 +157,6 @@ export class Viaje {
 			this.cargando = false;
 		}
 	}
-	
-	/*guardarViaje(){
-		let latitudess = this.locationTracker.latitudes[this.id].join('|'); 
-		let longitudess = this.locationTracker.longitudes[this.id].join('|'); 
-		let distanciass = this.locationTracker.distancias[this.id].join('|'); 
-		let fechass = this.locationTracker.fechas[this.id].join('|');
-		let myData = JSON.stringify({action: "guardarDirecciones", viaje_id: this.id, latitudes: latitudess, longitudes: longitudess, distancias: distanciass, fechas: fechass});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			this.locationTracker.eliminarDatosViaje(this.id);
-			if(this.viajeActual.fechaValida){
-				this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
-				this.cargando = true;
-			}
-			else{
-				this.navCtrl.setRoot(Home);
-				this.cargando = false;
-			}
-		}, 
-		error => {
-			this.global.showError("Oooops! Por favor intente de nuevo!");
-		});
-	}*/
 	
 	reiniciarViaje(){
 		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.id});

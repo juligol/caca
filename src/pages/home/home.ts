@@ -35,14 +35,6 @@ export class Home{
 		});
 		
 		this.viajesProvider.cargarViajes();
-
-		if(!this.locationTracker.cronEncendido()){
-			//TimeOut para que sincronize el loading con cargarViajes en pc
-			setTimeout(() => {
-				this.encenderGPS();
-				//this.locationTracker.startTracking();
-			}, 500);
-		}
 		
 		this.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
@@ -60,24 +52,6 @@ export class Home{
 				resolve();
 			});
 		}
-	}
-	
-	encenderGPS(){
-		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
-			if(canRequest) {
-				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					error => console.log("Error desde el request true")
-				);
-			}else{
-				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					error => console.log("Error desde el request false")
-				);
-			}
-		});
 	}
 	
 	verSubmenu(group) {
@@ -114,11 +88,11 @@ export class Home{
 	
 	verRecorrido(event, item) {
 		this.global.loading();
-		this.verificarGPS(event, item);
+		this.verificarGPS(item);
 		//this.irAlViaje(item);
 	}
 	
-	verificarGPS(event, item){
+	verificarGPS(item){
 		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
 			if(canRequest) {
 				// the accuracy option will be ignored by iOS
@@ -137,10 +111,11 @@ export class Home{
 	}
 	
 	irAlViaje(item){
-		if(!this.locationTracker.cronEncendido())
+		if(!this.locationTracker.cronEncendido()){
 			this.locationTracker.startTracking();
-		else
+		}else{
 			console.log('Back y front activos');
+		}
 		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
 	}
 }

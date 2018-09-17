@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
 import { AlertController } from 'ionic-angular';
+import { LocationAccuracy } from '@ionic-native/location-accuracy';
+
 import { GlobalProvider } from "../global/global";
 import { LocationTracker } from "../location-tracker/location-tracker";
 
@@ -12,12 +14,13 @@ export class ViajesProvider {
 	public items = [];
 	public contador: any;
 
-  constructor(private storage: Storage, 
+	constructor(private storage: Storage, 
 			  public alertCtrl: AlertController,
+			  private locationAccuracy: LocationAccuracy,
 			  public global: GlobalProvider,
 			  public locationTracker: LocationTracker) {
     
-  }
+	}
   
 	cargarViajes(){
 		this.storage.get('user').then((user) => {
@@ -53,6 +56,12 @@ export class ViajesProvider {
 			}
 		}
 		this.inicializarListado(viajes);
+		if(!this.locationTracker.cronEncendido()){
+			this.verificarGPS();
+			//this.locationTracker.startTracking();
+		}else{
+			console.log('Back y front activos');
+		}
 	}
 	
 	inicializarListado(viajes){
@@ -66,6 +75,24 @@ export class ViajesProvider {
 		for (var i = 0; i < this.contador; i++) {
 			this.items.push(viajes[i]);
 		}
+	}
+	
+	verificarGPS(){
+		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
+			if(canRequest) {
+				// the accuracy option will be ignored by iOS
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.locationTracker.startTracking(),
+					error => this.global.stopLoading()
+				);
+			}else{
+				// the accuracy option will be ignored by iOS
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.locationTracker.startTracking(),
+					error => this.global.stopLoading()
+				);
+			}
+		});
 	}
 	
 	doInfinite(infiniteScroll) {

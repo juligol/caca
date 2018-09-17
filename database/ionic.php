@@ -342,11 +342,16 @@
 		$distancia = 0;
 		$ultimoIngreso = guardarDireccionEnDB($conexion, $viaje_id, $request->latitud, $request->longitud, $request->distancia, $request->fecha);
 		if($ultimoIngreso){
-			$query = "SELECT SUM(distancia) as distancia FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+			$query = "SELECT * FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
 			$result = mysql_fetch_array(mysql_query($query, $conexion));
-			$distancia = $result["distancia"];
-			$query = "UPDATE mab_viajes SET distancia_total_recorrida = '$distancia' WHERE id = " . $viaje_id;
-			$result = mysql_query($query, $conexion);
+			//Si solo recorrio 2 (inicio y fin) se reinicia, si recorrio mas se calcula la distancia
+			if(mysql_num_rows($result) > 2){
+				$query = "SELECT SUM(distancia) as distancia FROM mab_viaje_en_proceso WHERE viaje_id = " . $viaje_id;
+				$result = mysql_fetch_array(mysql_query($query, $conexion));
+				$distancia = $result["distancia"];
+				$query = "UPDATE mab_viajes SET distancia_total_recorrida = '$distancia' WHERE id = " . $viaje_id;
+				$result = mysql_query($query, $conexion);
+			}
 		}
 		return $distancia;
 	}
