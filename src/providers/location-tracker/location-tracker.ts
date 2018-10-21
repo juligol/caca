@@ -45,42 +45,44 @@ export class LocationTracker {
 	}
 	
 	backgroundTracking(){
+		var self = this;
 		// Background Tracking
-		this.backgroundGeolocation.configure(this.config).subscribe((location: BackgroundGeolocationResponse) => {
-			this.zone.run(() => {
-				this.storage.get('user').then((user) => {
-					this.posicionActual = {lat: location.latitude, lng: location.longitude};
-					var fechaNueva = this.global.getFecha(location.time);
-					this.actualizarPosicion(user.id, fechaNueva, this.posicionActual, "Back");
+		self.backgroundGeolocation.configure(self.config).subscribe((location: BackgroundGeolocationResponse) => {
+			self.zone.run(() => {
+				self.storage.get('user').then((user) => {
+					self.posicionActual = {lat: location.latitude, lng: location.longitude};
+					var fechaNueva = self.global.getFecha(location.time);
+					self.actualizarPosicion(user.id, fechaNueva, self.posicionActual, "Back");
 				},
 				error => {
-					this.global.showMessage("Error en WatchPosition", error);
+					self.global.showMessage("Error en WatchPosition", error);
 				});
 			});
-			this.backgroundGeolocation.finish();
+			self.backgroundGeolocation.finish();
 		}, 
 		(error) => {
-			this.global.mensaje("Error en Background", error);
+			self.global.mensaje("Error en Background", error);
 		});
 		// Turn ON the background-geolocation system.
-		this.backgroundGeolocation.start();
+		self.backgroundGeolocation.start();
 	}
 	
 	foregroundTracking(){
+		var self = this;
 		// Foreground Tracking
 		let options = {
 			frequency: 3000,
 			enableHighAccuracy: true
 		};
-		this.watch = this.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
-			this.zone.run(() => {
-				this.storage.get('user').then((user) => {
-					this.posicionActual = {lat: position.coords.latitude, lng: position.coords.longitude};
-					var fechaNueva = this.global.getFecha(position.timestamp);
-					this.actualizarPosicion(user.id, fechaNueva, this.posicionActual, "Front");
+		self.watch = self.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
+			self.zone.run(() => {
+				self.storage.get('user').then((user) => {
+					self.posicionActual = {lat: position.coords.latitude, lng: position.coords.longitude};
+					var fechaNueva = self.global.getFecha(position.timestamp);
+					self.actualizarPosicion(user.id, fechaNueva, self.posicionActual, "Front");
 				},
 				error => {
-					this.global.showMessage("Error en WatchPosition", error);
+					self.global.showMessage("Error en WatchPosition", error);
 				});
 			});
 		});
@@ -126,19 +128,20 @@ export class LocationTracker {
 	}
 	
 	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
+		var self = this;
 		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			this.encendido = true;
+		self.global.http.post(self.global.link, myData).subscribe(data => {
+			self.encendido = true;
 			console.log(myData);
-			if(this.marker != null)
-				this.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
+			if(self.marker != null)
+			self.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
 			
-			for (var i = 0; i < this.viajes.length; i++) {
-				this.guardarPosicion(this.viajes[i], fechaNueva, posicionNueva);
+			for (var i = 0; i < self.viajes.length; i++) {
+				self.guardarPosicion(self.viajes[i], fechaNueva, posicionNueva);
 			}
 		},
 		error => {
-			this.global.showMessage("Error actualizando la posicion", error);
+			self.global.showMessage("Error actualizando la posicion", error);
 		});
 	}
 	
@@ -155,16 +158,17 @@ export class LocationTracker {
 	}
 	
 	guardarEnArrays(id, fecha, posicion, distancia){
-		this.ultima_fecha[id] = fecha;
-		this.ultima_posicion[id] = posicion;
+		var self = this;
+		self.ultima_fecha[id] = fecha;
+		self.ultima_posicion[id] = posicion;
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			this.ultima_fecha[id] = fecha;
-			this.ultima_posicion[id] = posicion;
-			this.loguear();
+		self.global.http.post(self.global.link, myData).subscribe(data => {
+			self.ultima_fecha[id] = fecha;
+			self.ultima_posicion[id] = posicion;
+			self.loguear();
 		},
 		error => {
-			this.global.showMessage("Error guardando la posicion del viaje", error);
+			self.global.showMessage("Error guardando la posicion del viaje", error);
 		});
 	}
 	

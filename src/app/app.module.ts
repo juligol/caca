@@ -29,40 +29,40 @@ import { Password } from '../pages/password/password';
 @NgModule({
   declarations: [
     MyApp,
-	Login,
-	Logout,
-	Home,
-	Viaje,
-	CerrarViaje,
-	Password
+    Login,
+    Logout,
+    Home,
+    Viaje,
+    CerrarViaje,
+    Password
   ],
   imports: [
     BrowserModule,
     IonicModule.forRoot(MyApp),
-	HttpModule,
-	IonicStorageModule.forRoot()
+    HttpModule,
+    IonicStorageModule.forRoot()
   ],
   bootstrap: [IonicApp],
   entryComponents: [
     MyApp,
-	Login,
-	Logout,
-	Home,
-	Viaje,
-	CerrarViaje,
-	Password
+    Login,
+    Logout,
+    Home,
+    Viaje,
+    CerrarViaje,
+    Password
   ],
   providers: [
     StatusBar,
     SplashScreen,
     {provide: ErrorHandler, useClass: IonicErrorHandler},
     LocationTracker,
-	LocationAccuracy,
-	BackgroundGeolocation,
-	Geolocation,
+	  LocationAccuracy,
+	  BackgroundGeolocation,
+  	Geolocation,
     GlobalProvider,
     ViajesProvider,
-	Insomnia
+	  Insomnia
   ]
 })
 

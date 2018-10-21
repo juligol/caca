@@ -39,7 +39,7 @@ export class Viaje {
 		this.viajeActual = navParams.get('item');
 		this.id = this.viajeActual.id;
 		this.directionsService = new google.maps.DirectionsService();
-		this.directionsDisplay = new google.maps.DirectionsRenderer
+		this.directionsDisplay = new google.maps.DirectionsRenderer;
 	}
 	
 	ionViewWillEnter() {
@@ -51,45 +51,48 @@ export class Viaje {
 	}
   
 	ionViewDidLoad(){
-		this.plt.ready().then(() => {
+		var self = this;
+		self.plt.ready().then(() => {
 			let mapEle: HTMLElement = document.getElementById('map');
 			let panelEle: HTMLElement = document.getElementById('panel');
-			this.map = new google.maps.Map(mapEle, {center: this.locationTracker.posicionActual, zoom: 12});
-			this.directionsDisplay.setPanel(panelEle);
-			this.directionsDisplay.setMap(this.map);
+			self.map = new google.maps.Map(mapEle, {center: self.locationTracker.posicionActual, zoom: 12});
+			self.directionsDisplay.setPanel(panelEle);
+			self.directionsDisplay.setMap(self.map);
 			mapEle.classList.add('show-map');
-			this.locationTracker.marker = new google.maps.Marker({map: this.map, title: 'Aqui estoy!'});
-			this.locationTracker.marker.setPosition(this.locationTracker.posicionActual);
-			this.mostrarRutaEntre(this.viajeActual.origen, this.viajeActual.destino);
+			self.locationTracker.marker = new google.maps.Marker({map: self.map, title: 'Aqui estoy!'});
+			self.locationTracker.marker.setPosition(self.locationTracker.posicionActual);
+			self.mostrarRutaEntre(self.viajeActual.origen, self.viajeActual.destino);
 		});
 	}
 
 	private mostrarRutaEntre(origen, destino){
-		this.directionsService.route({
+		var self = this;
+		self.directionsService.route({
 			origin: origen,
 			destination: destino,
 			travelMode: google.maps.TravelMode.DRIVING,
 			avoidTolls: true
 		}, (response, status)=> {
 			if(status === google.maps.DirectionsStatus.OK) {
-				this.directionsDisplay.setDirections(response);
+				self.directionsDisplay.setDirections(response);
 			}else{
 				alert('No se pudieron cargar las direcciones debido a: ' + status);
 			}
 			//Esperar un cachito mas 
-			setTimeout(() => {this.global.stopLoading();}, 1000);
+			setTimeout(() => {self.global.stopLoading();}, 1000);
 		});  
 	}
 	
 	comenzarViaje() {
-		this.viajeActual.en_proceso = 1;
-		this.locationTracker.inicializarArrays(this.id);
-		this.geolocation.getCurrentPosition().then(pos => {
+		var self = this;
+		self.viajeActual.en_proceso = 1;
+		self.locationTracker.inicializarArrays(self.id);
+		self.geolocation.getCurrentPosition().then(pos => {
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			let fechaNueva = this.global.getFecha(pos.timestamp);
-			this.locationTracker.guardarEnArrays(this.id, fechaNueva, posicionNueva, 0);
+			let fechaNueva = self.global.getFecha(pos.timestamp);
+			self.locationTracker.guardarEnArrays(self.id, fechaNueva, posicionNueva, 0);
 		}).catch((error) => {
-			this.global.showMessage("Error al obtener la posicion inicial", error);
+			self.global.showMessage("Error al obtener la posicion inicial", error);
 		});
 	}
 	
@@ -117,33 +120,35 @@ export class Viaje {
 	}
 	
 	detenerViaje() {
-		this.global.loading();
-		this.geolocation.getCurrentPosition().then(pos => {
-			let posicionVieja = this.locationTracker.ultima_posicion[this.id];
+		var self = this;
+		self.global.loading();
+		self.geolocation.getCurrentPosition().then(pos => {
+			let posicionVieja = self.locationTracker.ultima_posicion[self.id];
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			let fechaNueva = this.global.getFecha(pos.timestamp);
-			let distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+			let fechaNueva = self.global.getFecha(pos.timestamp);
+			let distancia = self.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
 			//Mando la ultima posicion con su fecha y distancia para que sincronize la ultima entrada a la BDs
-			this.ultimoIngresoYDistanciaFinal(fechaNueva, posicionNueva, distancia);
+			self.ultimoIngresoYDistanciaFinal(fechaNueva, posicionNueva, distancia);
 		}).catch((error) => {
-			this.global.showMessage("Error al obtener la posicion final", error);
+			self.global.showMessage("Error al obtener la posicion final", error);
 		});
 	}
 	
 	ultimoIngresoYDistanciaFinal(fecha, posicion, distancia){
-		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
-			this.locationTracker.eliminarDatosViaje(this.id);
+		var self = this;
+		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: self.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
+		self.global.http.post(self.global.link, myData).subscribe(data => {
+			self.locationTracker.eliminarDatosViaje(self.id);
 			let distancia = parseFloat(data["_body"]);
-			this.global.mensaje("Distancia total recorrida", distancia.toFixed(2) + " Km");
+			self.global.mensaje("Distancia total recorrida", distancia.toFixed(2) + " Km");
 			if(distancia > 0){
-				this.verificarCierreViaje();
+				self.verificarCierreViaje();
 			}else{
-				this.reiniciarViaje();
+				self.reiniciarViaje();
 			}
 		}, 
 		error => {
-			this.global.showMessage("Error al calcular la distancia final", error);
+			self.global.showMessage("Error al calcular la distancia final", error);
 		});
 	}
 	
@@ -159,15 +164,16 @@ export class Viaje {
 	}
 	
 	reiniciarViaje(){
-		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.id});
-		this.global.http.post(this.global.link, myData).subscribe(data => {
+		var self = this;
+		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: self.id});
+		self.global.http.post(self.global.link, myData).subscribe(data => {
 			console.log(data["_body"]);
 			this.viajeActual.en_proceso = 0;
 			this.cargando = true;
-			this.global.stopLoading();
+			self.global.stopLoading();
 		}, 
 		error => {
-			this.global.showMessage("Error al reiniciar el viaje", error);
+			self.global.showMessage("Error al reiniciar el viaje", error);
 		});
 	}
 }

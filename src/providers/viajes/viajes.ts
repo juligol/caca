@@ -23,25 +23,31 @@ export class ViajesProvider {
 	}
   
 	cargarViajes(){
-		this.storage.get('user').then((user) => {
+		var self = this;
+		self.storage.get('user').then((user) => {
 			var myData = JSON.stringify({action: "viajes", chofer_id: user.id});
-			this.global.http.post(this.global.link, myData).subscribe(data => {
+			self.global.http.post(self.global.link, myData).subscribe(data => {
 				var viajes = JSON.parse(data["_body"]);
-				//console.log(viajes);
 				if(viajes.length > 0)
 				{
-					this.viajes = viajes;
-					this.verificarViajesEIniciar(this.viajes);
+					self.viajes = viajes;
+					self.verificarViajesEIniciar(viajes);
 				}
-				this.global.stopLoading();
+				self.global.stopLoading();
 			}, 
 			error => {
-				this.global.showMessage('Error obteniendo los viajes', error);
+				self.global.showMessage('Error obteniendo los viajes', error);
 			});
 		});
 	}
 	
 	verificarViajesEIniciar(viajes){
+		this.verificarViajes(viajes);
+		this.inicializarListado(viajes);
+		this.verificarTracking();
+	}
+
+	verificarViajes(viajes){
 		for (var i = 0; i < viajes.length; i++) {
 			var viaje = viajes[i];
 			//Saco del cron los viajes que quedaron colgados y no estan iniciados
@@ -54,13 +60,6 @@ export class ViajesProvider {
 				console.log("Meto al cron: viaje " + viaje.id);
 				this.locationTracker.cargarAlCron(viaje);
 			}
-		}
-		this.inicializarListado(viajes);
-		if(!this.locationTracker.cronEncendido()){
-			this.verificarGPS();
-			//this.locationTracker.startTracking();
-		}else{
-			console.log('Back y front activos');
 		}
 	}
 	
@@ -76,20 +75,30 @@ export class ViajesProvider {
 			this.items.push(viajes[i]);
 		}
 	}
+
+	verificarTracking(){
+		if(!this.locationTracker.cronEncendido()){
+			this.verificarGPS();
+			//this.locationTracker.startTracking();
+		}else{
+			console.log('Back y front activos');
+		}
+	}
 	
 	verificarGPS(){
-		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
+		var self = this;
+		self.locationAccuracy.canRequest().then((canRequest: boolean) => {
 			if(canRequest) {
 				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					error => this.global.stopLoading()
+				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => self.locationTracker.startTracking(),
+					error => self.global.stopLoading()
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.locationTracker.startTracking(),
-					error => this.global.stopLoading()
+				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => self.locationTracker.startTracking(),
+					error => self.global.stopLoading()
 				);
 			}
 		});
@@ -168,13 +177,14 @@ export class ViajesProvider {
 	}
 	
 	rechazarViaje(event, item) {
-		this.storage.get('user').then((user) => {
+		var self = this;
+		self.storage.get('user').then((user) => {
 			var myData = JSON.stringify({action: "rechazarViaje", viaje_id: item.id, chofer_id: user.id, chofer: user.nombre, proveedor: user.proveedor});
-			this.global.http.post(this.global.link, myData).subscribe(data => {
-				this.cargarViajes();
+			self.global.http.post(self.global.link, myData).subscribe(data => {
+				self.cargarViajes();
 			}, 
 			error => {
-				this.global.showMessage('Error al rechazar el viaje', error);
+				self.global.showMessage('Error al rechazar el viaje', error);
 			});
 		});
 	}

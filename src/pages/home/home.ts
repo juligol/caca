@@ -93,18 +93,19 @@ export class Home{
 	}
 	
 	verificarGPS(item){
-		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
+		var self = this;
+		self.locationAccuracy.canRequest().then((canRequest: boolean) => {
 			if(canRequest) {
 				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.irAlViaje(item),
-					error => this.global.stopLoading()
+				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => self.irAlViaje(item),
+					error => self.global.stopLoading()
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
-				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => this.irAlViaje(item),
-					error => this.global.stopLoading()
+				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => self.irAlViaje(item),
+					error => self.global.stopLoading()
 				);
 			}
 		});
