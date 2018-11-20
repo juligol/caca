@@ -26,7 +26,7 @@ export class ViajesProvider {
 		var self = this;
 		self.storage.get('user').then((user) => {
 			var myData = JSON.stringify({action: "viajes", chofer_id: user.id});
-			self.global.http.post(self.global.link, myData).subscribe(data => {
+			self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 				var viajes = JSON.parse(data["_body"]);
 				if(viajes.length > 0)
 				{
@@ -105,26 +105,27 @@ export class ViajesProvider {
 	}
 	
 	doInfinite(infiniteScroll) {
+		var self = this;
 		setTimeout(() => {
 			var cantidadAdicional;
-			var losQueQuedan = this.viajesAux.length - this.contador;
+			var losQueQuedan = self.viajesAux.length - self.contador;
 			if(losQueQuedan < 5){
 				cantidadAdicional = losQueQuedan;
 			}else{
 				cantidadAdicional = 5;
 			}
-			for (let i = this.contador; i < this.contador + cantidadAdicional; i++) {
-				this.items.push( this.viajesAux[i] );
+			for (let i = self.contador; i < self.contador + cantidadAdicional; i++) {
+				self.items.push( self.viajesAux[i] );
 			}
-			this.contador += cantidadAdicional;
+			self.contador += cantidadAdicional;
 			infiniteScroll.complete();
 		}, 500);
 	}
 	
-	buscarItems(evento: any) {
+	buscarItems(event: any) {
 		this.inicializarListado(this.viajes);
 		// set val to the value of the searchbar
-		this.busqueda = evento.target.value;
+		this.busqueda = event.target.value;
 		// if the value is an empty string don't filter the items
 		if (this.busqueda && this.busqueda.trim() != '') {
 			this.viajesAux = this.viajes.filter((item) => {
@@ -150,26 +151,28 @@ export class ViajesProvider {
 	}
 	
 	actualizarListado(refresher) {
+		var self = this;
 		setTimeout(() => {
-			this.cargarViajes();
+			self.cargarViajes();
 			refresher.complete();
 		}, 2000);
 	}
 	
 	preguntarRechazarViaje(event, item){
-		this.global.loading();
-		let alert = this.alertCtrl.create({
+		var self = this;
+		self.global.loading();
+		let alert = self.alertCtrl.create({
 			title: 'Viaje ' + item.id,
 			message: 'Desea rechazar este viaje?',
 			buttons: [
 			{
 				text: 'Cancelar',
 				role: 'cancel',
-				handler: () => {this.global.stopLoading();}
+				handler: () => {self.global.stopLoading();}
 			},
 			{
 				text: 'Aceptar',
-				handler: () => {this.rechazarViaje(event, item);}
+				handler: () => {self.rechazarViaje(event, item);}
 			}
 			]
 		});
@@ -180,7 +183,7 @@ export class ViajesProvider {
 		var self = this;
 		self.storage.get('user').then((user) => {
 			var myData = JSON.stringify({action: "rechazarViaje", viaje_id: item.id, chofer_id: user.id, chofer: user.nombre, proveedor: user.proveedor});
-			self.global.http.post(self.global.link, myData).subscribe(data => {
+			self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 				self.cargarViajes();
 			}, 
 			error => {

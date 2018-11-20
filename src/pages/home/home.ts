@@ -27,28 +27,29 @@ export class Home{
 				public global: GlobalProvider,
 				public locationTracker: LocationTracker,
 				public viajesProvider: ViajesProvider){
-				
-		this.menuCtrl.enable(true);
 		
-		this.storage.get('user').then((val) => {
+		var self = this;
+		self.menuCtrl.enable(true);
+		
+		self.storage.get('user').then((val) => {
 			console.log('Hola ' + val.nombre);
 		});
 		
-		this.viajesProvider.cargarViajes();
+		self.viajesProvider.cargarViajes();
 		
-		this.myCallbackFunction = (parametros) => {
+		self.myCallbackFunction = (parametros) => {
 			return new Promise((resolve, reject) => {
 				if(parametros.cargando)
-					this.global.stopLoading();
-				this.menuCtrl.enable(true);
+					self.global.stopLoading();
+				self.menuCtrl.enable(true);
 				var viaje_id = parametros.viaje.id;
-				this.viajesProvider.viajes = this.viajesProvider.viajes.map((item) => {
+				self.viajesProvider.viajes = self.viajesProvider.viajes.map((item) => {
 					if(item.id == viaje_id)
 						return parametros.viaje;
 					else
 						return item;
 				});
-				this.viajesProvider.inicializarListado(this.viajesProvider.viajes);
+				self.viajesProvider.inicializarListado(self.viajesProvider.viajes);
 				resolve();
 			});
 		}
@@ -112,11 +113,12 @@ export class Home{
 	}
 	
 	irAlViaje(item){
-		if(!this.locationTracker.cronEncendido()){
-			this.locationTracker.startTracking();
+		var self = this;
+		if(!self.locationTracker.cronEncendido()){
+			self.locationTracker.startTracking();
 		}else{
 			console.log('Back y front activos');
 		}
-		this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		self.navCtrl.push(Viaje, { item: item, callback: self.myCallbackFunction });
 	}
 }

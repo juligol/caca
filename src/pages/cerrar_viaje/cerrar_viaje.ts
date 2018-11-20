@@ -44,19 +44,20 @@ export class CerrarViaje{
 	}
 	
 	cerrarViajeForm(){
-		this.global.loading();
-		this.storage.get('user').then((user) => {
-			this.form.value.action = "cerrarViaje";
-			this.form.value.viaje = this.viajeActual;
-			this.form.value.chofer_id = user.id;
-			this.form.value.chofer_nombre = user.nombre;
-			var myData = JSON.stringify(this.form.value);
-			this.global.http.post(this.global.link, myData).subscribe(data => {
+		var self = this;
+		self.global.loading();
+		self.storage.get('user').then((user) => {
+			self.form.value.action = "cerrarViaje";
+			self.form.value.viaje = self.viajeActual;
+			self.form.value.chofer_id = user.id;
+			self.form.value.chofer_nombre = user.nombre;
+			var myData = JSON.stringify(self.form.value);
+			self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 				console.log(data["_body"]);
-				this.navCtrl.setRoot(Home);
+				self.navCtrl.setRoot(Home);
 			}, 
 			error => {
-				this.global.showMessage('Error al cerrar el viaje', error);
+				self.global.showMessage('Error al cerrar el viaje', error);
 			});
 		});
 	}

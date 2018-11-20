@@ -47,7 +47,8 @@ export class Viaje {
 	}
 	
 	ionViewWillLeave() {
-		this.callback({viaje: this.viajeActual, cargando: this.cargando});
+		var self = this;
+		self.callback({viaje: self.viajeActual, cargando: self.cargando});
 	}
   
 	ionViewDidLoad(){
@@ -97,8 +98,9 @@ export class Viaje {
 	}
 	
 	finalizarViaje() {
-		let alert = this.alertCtrl.create({
-			title: 'Viaje ' + this.id,
+		var self = this;
+		let alert = self.alertCtrl.create({
+			title: 'Viaje ' + self.id,
 			message: 'Desea finalizar este viaje?',
 			buttons: [
 			{
@@ -111,7 +113,7 @@ export class Viaje {
 			{
 				text: 'Aceptar',
 				handler: () => {
-					this.detenerViaje();
+					self.detenerViaje();
 				}
 			}
 			]
@@ -137,7 +139,7 @@ export class Viaje {
 	ultimoIngresoYDistanciaFinal(fecha, posicion, distancia){
 		var self = this;
 		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: self.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
-		self.global.http.post(self.global.link, myData).subscribe(data => {
+		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 			self.locationTracker.eliminarDatosViaje(self.id);
 			let distancia = parseFloat(data["_body"]);
 			self.global.mensaje("Distancia total recorrida", distancia.toFixed(2) + " Km");
@@ -153,23 +155,24 @@ export class Viaje {
 	}
 	
 	verificarCierreViaje(){
-		if(this.viajeActual.fechaValida){
-			this.navCtrl.setRoot(CerrarViaje, {viaje: this.viajeActual});
-			this.cargando = true;
+		var self = this;
+		if(self.viajeActual.fechaValida){
+			self.navCtrl.setRoot(CerrarViaje, {viaje: self.viajeActual});
+			self.cargando = true;
 		}
 		else{
-			this.navCtrl.setRoot(Home);
-			this.cargando = false;
+			self.navCtrl.setRoot(Home);
+			self.cargando = false;
 		}
 	}
 	
 	reiniciarViaje(){
 		var self = this;
 		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: self.id});
-		self.global.http.post(self.global.link, myData).subscribe(data => {
+		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 			console.log(data["_body"]);
-			this.viajeActual.en_proceso = 0;
-			this.cargando = true;
+			self.viajeActual.en_proceso = 0;
+			self.cargando = true;
 			self.global.stopLoading();
 		}, 
 		error => {

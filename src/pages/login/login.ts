@@ -34,7 +34,7 @@ export class Login {
 		self.global.loading();
 		self.form.value.action = "login";
 		var myData = JSON.stringify(self.form.value);
-		self.global.http.post(self.global.link, myData).subscribe(data => {
+		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 			var usuario = JSON.parse(data["_body"]);
 			if(usuario)
 			{

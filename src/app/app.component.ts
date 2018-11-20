@@ -27,32 +27,34 @@ export class MyApp {
 				public global: GlobalProvider,
 				public insomnia: Insomnia) {
 		
+		var self = this;
 		// Si tiene algo la sesion
-		this.storage.get('user').then((val) => {
+		self.storage.get('user').then((val) => {
 			if(val){
-				this.global.loading();
-				this.rootPage = Home;
+				self.global.loading();
+				self.rootPage = Home;
 			}else{
-				this.rootPage = Login;
+				self.rootPage = Login;
 			}
 		});
 		
-		this.initializeApp();
+		self.initializeApp();
 		// set our app's pages
-		this.pages = [
+		self.pages = [
 		  { title: 'Home', component: Home },
 		  { title: 'Cerrar sesión', component: Logout }
 		];
 	}
 
 	initializeApp() {
-		this.platform.ready().then(() => {
+		var self = this;
+		self.platform.ready().then(() => {
 			// Okay, so the platform is ready and our plugins are available.
 			// Here you can do any higher level native things you might need.
-			this.statusBar.styleDefault();
-			this.splashScreen.hide();
+			self.statusBar.styleDefault();
+			self.splashScreen.hide();
 			// Para que no se bloquee 
-			this.insomnia.keepAwake().then(
+			self.insomnia.keepAwake().then(
 				() => console.log('KeepAwake success'),
 				() => console.log('KeepAwake Error')
 			);

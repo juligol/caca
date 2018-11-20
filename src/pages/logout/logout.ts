@@ -15,14 +15,15 @@ export class Logout {
 				private storage: Storage, 
 				public locationTracker: LocationTracker){
 					
-		this.storage.get('user').then((val) => {
+		var self = this;
+		self.storage.get('user').then((val) => {
 			console.log('Cerrando sesión de: ' + val.nombre);
 		});
-		if(this.locationTracker.cronEncendido)
-			this.locationTracker.stopTracking();
-		this.storage.remove('user');
-		this.storage.get('user').then((val) => {
-			this.navCtrl.setRoot(Login);
+		if(self.locationTracker.cronEncendido)
+			self.locationTracker.stopTracking();
+		self.storage.remove('user');
+		self.storage.get('user').then((val) => {
+			self.navCtrl.setRoot(Login);
 			console.log(val);
 		});
 	}

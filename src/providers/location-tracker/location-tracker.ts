@@ -30,7 +30,7 @@ export class LocationTracker {
 			distanceFilter: 0,
 			debug: false,
 			stopOnTerminate: false,
-			//url: this.global.link + '?chofer_id=' + user.id,
+			//url: this.global.getLink() + '?chofer_id=' + user.id,
 			interval: 2000
 		};
 	}
@@ -130,11 +130,11 @@ export class LocationTracker {
 	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
 		var self = this;
 		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
-		self.global.http.post(self.global.link, myData).subscribe(data => {
+		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 			self.encendido = true;
 			console.log(myData);
 			if(self.marker != null)
-			self.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
+				self.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
 			
 			for (var i = 0; i < self.viajes.length; i++) {
 				self.guardarPosicion(self.viajes[i], fechaNueva, posicionNueva);
@@ -162,7 +162,7 @@ export class LocationTracker {
 		self.ultima_fecha[id] = fecha;
 		self.ultima_posicion[id] = posicion;
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
-		self.global.http.post(self.global.link, myData).subscribe(data => {
+		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
 			self.ultima_fecha[id] = fecha;
 			self.ultima_posicion[id] = posicion;
 			self.loguear();

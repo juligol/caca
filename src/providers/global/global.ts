@@ -18,6 +18,10 @@ export class GlobalProvider {
 		this.http = http;
 		this.tzoffset = (new Date()).getTimezoneOffset() * 60000; //offset in 
 	}
+
+	getLink(){
+		return 'http://mab.doublepoint.com.ar/config/ionic.php';
+	}
 	
 	loading(){
 		this.loader = this.loadingCtrl.create({
