@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { NavController, NavParams } from 'ionic-angular';
 import { Validators, FormBuilder, FormGroup } from '@angular/forms';
-import { Storage } from '@ionic/storage';
 import { GlobalProvider } from "../../providers/global/global";
 import { Home } from '../home/home';
 
@@ -12,18 +11,17 @@ import { Home } from '../home/home';
 
 export class CerrarViaje{
 	private form : FormGroup;
-	viajeActual: any;
+	viaje: any;
 	remises = [];
 
 	constructor(private navCtrl: NavController,
 				public navParams: NavParams,
 				private formBuilder: FormBuilder,
-				private storage: Storage,
 				public global: GlobalProvider){
 					
-		this.viajeActual = navParams.get('viaje');
-		this.remises = this.viajeActual.remises;
-		//console.log(this.viajeActual);
+		this.viaje = navParams.get('viaje');
+		this.remises = this.viaje.remises;
+		//console.log(this.viaje);
 		
 		this.form = this.formBuilder.group({
 			remis: [''],
@@ -39,26 +37,27 @@ export class CerrarViaje{
 		
 		this.form.get('espera').setValue("00:00");
 		this.form.get('regreso').setValue("N");
-		if(this.remises.some(remis => (remis.marca + " - " + remis.modelo + " - " + remis.dominio) === this.viajeActual.remis))
-			this.form.get('remis').setValue(this.viajeActual.remis);	
+		if(this.remises.some(remis => (remis.marca + " - " + remis.modelo + " - " + remis.dominio) === this.viaje.remis))
+			this.form.get('remis').setValue(this.viaje.remis);	
+		
+		if(this.global.isLoading){
+			this.global.stopLoading();
+		}
 	}
 	
-	cerrarViajeForm(){
-		var self = this;
-		self.global.loading();
-		self.storage.get('user').then((user) => {
-			self.form.value.action = "cerrarViaje";
-			self.form.value.viaje = self.viajeActual;
-			self.form.value.chofer_id = user.id;
-			self.form.value.chofer_nombre = user.nombre;
-			var myData = JSON.stringify(self.form.value);
-			self.global.http.post(self.global.getLink(), myData).subscribe(data => {
-				console.log(data["_body"]);
-				self.navCtrl.setRoot(Home);
-			}, 
-			error => {
-				self.global.showMessage('Error al cerrar el viaje', error);
-			});
+	closeTripForm(){
+		this.global.loading();
+		this.form.value.action = "cerrarViaje";
+		this.form.value.viaje = this.viaje;
+		this.form.value.chofer_id = this.global.user.id;
+		this.form.value.chofer_nombre = this.global.user.nombre;
+		var myData = JSON.stringify(this.form.value);
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
+			console.log(data["_body"]);
+			this.navCtrl.setRoot(Home);
+		}, 
+		error => {
+			this.global.showMessage('Error al cerrar el viaje', error);
 		});
 	}
 }

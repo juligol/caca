@@ -28,9 +28,10 @@ export class MyApp {
 				public insomnia: Insomnia) {
 		
 		var self = this;
-		// Si tiene algo la sesion
-		self.storage.get('user').then((val) => {
-			if(val){
+		// If the user is logged in
+		this.storage.get('user').then((user) => {
+			if(user){
+				self.global.user = user;
 				self.global.loading();
 				self.rootPage = Home;
 			}else{
@@ -38,23 +39,22 @@ export class MyApp {
 			}
 		});
 		
-		self.initializeApp();
-		// set our app's pages
-		self.pages = [
+		this.initializeApp();
+		// Set our app's pages
+		this.pages = [
 		  { title: 'Home', component: Home },
 		  { title: 'Cerrar sesión', component: Logout }
 		];
 	}
 
 	initializeApp() {
-		var self = this;
-		self.platform.ready().then(() => {
+		this.platform.ready().then(() => {
 			// Okay, so the platform is ready and our plugins are available.
 			// Here you can do any higher level native things you might need.
-			self.statusBar.styleDefault();
-			self.splashScreen.hide();
+			this.statusBar.styleDefault();
+			this.splashScreen.hide();
 			// Para que no se bloquee 
-			self.insomnia.keepAwake().then(
+			this.insomnia.keepAwake().then(
 				() => console.log('KeepAwake success'),
 				() => console.log('KeepAwake Error')
 			);

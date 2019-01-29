@@ -3,15 +3,13 @@ import { BackgroundGeolocation, BackgroundGeolocationConfig, BackgroundGeolocati
 import { Geolocation, Geoposition } from '@ionic-native/geolocation';
 import 'rxjs/add/operator/filter';
 import { GlobalProvider } from "../global/global";
-import { Storage } from '@ionic/storage';
 
 @Injectable()
 export class LocationTracker {
 	
-	public encendido: Boolean = false;
+	public cronEncendido: Boolean = false;
 	public watch: any;
 	public posicionActual: any;
-	public config: BackgroundGeolocationConfig;
 	public marker: any = null;
 	
 	public viajes			= [];
@@ -21,22 +19,12 @@ export class LocationTracker {
 	constructor(public zone: NgZone,
 				public backgroundGeolocation: BackgroundGeolocation, 
 				public geolocation: Geolocation,
-				private storage: Storage,
 				public global: GlobalProvider) {
-		
-		this.config = {
-			desiredAccuracy: 0,
-			stationaryRadius: 0,
-			distanceFilter: 0,
-			debug: false,
-			stopOnTerminate: false,
-			//url: this.global.getLink() + '?chofer_id=' + user.id,
-			interval: 2000
-		};
+	
 	}
 	
-	cronEncendido() {
-		return this.encendido && this.watch;
+	isCronOn() {
+		return this.cronEncendido && this.watch;
 	}
 	
 	startTracking() {
@@ -45,136 +33,129 @@ export class LocationTracker {
 	}
 	
 	backgroundTracking(){
-		var self = this;
+		const config: BackgroundGeolocationConfig = {
+            desiredAccuracy: 10,
+            stationaryRadius: 20,
+            distanceFilter: 30,
+            debug: false, //  enable this hear sounds for background-geolocation life-cycle.
+			stopOnTerminate: false // enable this to clear background location settings when the app terminates
+			//interval: 120000
+    	};
 		// Background Tracking
-		self.backgroundGeolocation.configure(self.config).subscribe((location: BackgroundGeolocationResponse) => {
-			self.zone.run(() => {
-				self.storage.get('user').then((user) => {
-					self.posicionActual = {lat: location.latitude, lng: location.longitude};
-					var fechaNueva = self.global.getFecha(location.time);
-					self.actualizarPosicion(user.id, fechaNueva, self.posicionActual, "Back");
-				},
-				error => {
-					self.global.showMessage("Error en WatchPosition", error);
-				});
-			});
-			self.backgroundGeolocation.finish();
+		this.backgroundGeolocation.configure(config).subscribe((location: BackgroundGeolocationResponse) => {
+			//this.zone.run(() => {
+				this.posicionActual = {lat: location.latitude, lng: location.longitude};
+				var fechaNueva = this.global.getDate(location.time);
+				this.updatePosition(this.global.user.id, fechaNueva, this.posicionActual, "Back");
+			//});
+			this.backgroundGeolocation.finish();
 		}, 
 		(error) => {
-			self.global.mensaje("Error en Background", error);
+			this.global.message("Error en Background", error);
 		});
 		// Turn ON the background-geolocation system.
-		self.backgroundGeolocation.start();
+		this.backgroundGeolocation.start();
 	}
 	
 	foregroundTracking(){
-		var self = this;
 		// Foreground Tracking
 		let options = {
 			frequency: 3000,
 			enableHighAccuracy: true
 		};
-		self.watch = self.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
-			self.zone.run(() => {
-				self.storage.get('user').then((user) => {
-					self.posicionActual = {lat: position.coords.latitude, lng: position.coords.longitude};
-					var fechaNueva = self.global.getFecha(position.timestamp);
-					self.actualizarPosicion(user.id, fechaNueva, self.posicionActual, "Front");
-				},
-				error => {
-					self.global.showMessage("Error en WatchPosition", error);
-				});
-			});
+		this.watch = this.geolocation.watchPosition(options).filter((p: any) => p.code === undefined).subscribe((position: Geoposition) => {
+			//this.zone.run(() => {
+				this.posicionActual = {lat: position.coords.latitude, lng: position.coords.longitude};
+				var fechaNueva = this.global.getDate(position.timestamp);
+				this.updatePosition(this.global.user.id, fechaNueva, this.posicionActual, "Front");
+			//});
 		});
 	}
 	
-	inicializarArrays(id){
+	initializeArrays(id){
 		this.viajes.push(id);
-		this.inicializar(id);
-		this.loguear();
+		this.initialize(id);
+		//this.log();
 	}
 	
-	inicializar(id){
+	initialize(id){
 		this.ultima_posicion[id] = null;
 		this.ultima_fecha[id] = null;
 	}
 	
-	eliminarViaje(id){
+	deleteTrip(id){
 		var index = this.viajes.indexOf(id);
 		if (index > -1) {
 		  this.viajes.splice(index, 1);
 		}
 	}
 	
-	eliminarDatosViaje(id){
-		this.eliminarViaje(id);
-		this.inicializar(id);
-		this.loguear();
+	deleteTripData(id){
+		this.deleteTrip(id);
+		this.initialize(id);
+		this.log();
 	}
 	
-	loguear(){
+	log(){
 		console.log(this.viajes);
 		console.log(this.ultima_posicion);
 		console.log(this.ultima_fecha);
 	}
 	
-	cargarAlCron(viaje){
+	loadToCron(viaje){
 		//Las posiciones vienen desde la BD y agarro la ultima
 		let ultimo = viaje.puntos_trayecto.length - 1;
 		this.ultima_posicion[viaje.id] = {lat: viaje.puntos_trayecto[ultimo].latitud, lng: viaje.puntos_trayecto[ultimo].longitud};
 		this.ultima_fecha[viaje.id] = viaje.puntos_trayecto[ultimo].tiempo;
 		this.viajes.push(viaje.id);
-		this.loguear();
+		//this.log();
 	}
 	
-	actualizarPosicion(chofer_id, fechaNueva, posicionNueva, palabra){
-		var self = this;
+	updatePosition(chofer_id, fechaNueva, posicionNueva, palabra){
 		var myData = JSON.stringify({action: "actualizarPosicion", chofer_id: chofer_id, latitud: posicionNueva.lat, longitud: posicionNueva.lng, tiempo: fechaNueva, tipo: palabra});
-		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
-			self.encendido = true;
-			console.log(myData);
-			if(self.marker != null)
-				self.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
+			this.cronEncendido = true;
+			if(this.marker != null)
+				this.marker.setPosition({lat: posicionNueva.lat, lng: posicionNueva.lng});
 			
-			for (var i = 0; i < self.viajes.length; i++) {
-				self.guardarPosicion(self.viajes[i], fechaNueva, posicionNueva);
+			for (var i = 0; i < this.viajes.length; i++) {
+				this.savePosition(this.viajes[i], fechaNueva, posicionNueva);
 			}
 		},
 		error => {
-			self.global.showMessage("Error actualizando la posicion", error);
+			this.global.showMessage("Error actualizando la posicion", error);
 		});
 	}
 	
-	guardarPosicion(id, fechaNueva, posicionNueva){
+	savePosition(id, fechaNueva, posicionNueva){
 		var posicionVieja = this.ultima_posicion[id];
 		//console.log(posicionVieja);
 		if(posicionVieja){
-			var distancia = this.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
-			var tiempo = this.global.calcularTiempoEntre(this.ultima_fecha[id], fechaNueva);
+			var distancia = this.global.calculateDistance(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+			var tiempo = this.global.calculateTime(this.ultima_fecha[id], fechaNueva);
 			if(distancia > 0 /*100 metros*/ && tiempo >= 2 /*2 minutos*/){
-				this.guardarEnArrays(id, fechaNueva, posicionNueva, distancia);
+				this.saveInArrays(id, fechaNueva, posicionNueva, distancia);
 			}
 		}
 	}
 	
-	guardarEnArrays(id, fecha, posicion, distancia){
-		var self = this;
-		self.ultima_fecha[id] = fecha;
-		self.ultima_posicion[id] = posicion;
+	saveInArrays(id, fecha, posicion, distancia){
+		this.ultima_fecha[id] = fecha;
+		this.ultima_posicion[id] = posicion;
 		var myData = JSON.stringify({action: "guardarDireccion", viaje_id: id, latitud: posicion.lat, longitud: posicion.lng, fecha: fecha, distancia: distancia});
-		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
-			self.ultima_fecha[id] = fecha;
-			self.ultima_posicion[id] = posicion;
-			self.loguear();
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
+			this.ultima_fecha[id] = fecha;
+			this.ultima_posicion[id] = posicion;
+			this.log();
 		},
 		error => {
-			self.global.showMessage("Error guardando la posicion del viaje", error);
+			this.global.showMessage("Error guardando la posicion del viaje", error);
 		});
 	}
 	
 	stopTracking() {
 		this.backgroundGeolocation.stop();
 		this.watch.unsubscribe();
-		this.encendido = false;
+		this.cronEncendido = false;
 	}
 }

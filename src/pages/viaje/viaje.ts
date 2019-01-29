@@ -17,90 +17,79 @@ declare var google;
 })
 
 export class Viaje {
-	id: any;
-	callback: any;
-	viajeActual: any;
-	cargando: Boolean = true;
-	map: any;
+	viaje: any;
 	directionsService: any = null;
 	directionsDisplay: any = null;
 
-	constructor(private plt: Platform,
+	constructor(public menuCtrl: MenuController,
+				public navParams: NavParams,
+				private platform: Platform,
 				public navCtrl: NavController, 
-			    public navParams: NavParams,
 				public alertCtrl: AlertController,
 				private geolocation: Geolocation,
 				public global: GlobalProvider,
-				public menuCtrl: MenuController,
 				public locationTracker: LocationTracker) {
 					
 		this.menuCtrl.enable(false);
-					
-		this.viajeActual = navParams.get('item');
-		this.id = this.viajeActual.id;
+		this.viaje = navParams.get('item');
 		this.directionsService = new google.maps.DirectionsService();
 		this.directionsDisplay = new google.maps.DirectionsRenderer;
 	}
-	
-	ionViewWillEnter() {
-		this.callback = this.navParams.get("callback");
-	}
-	
-	ionViewWillLeave() {
-		var self = this;
-		self.callback({viaje: self.viajeActual, cargando: self.cargando});
-	}
-  
+
 	ionViewDidLoad(){
-		var self = this;
-		self.plt.ready().then(() => {
-			let mapEle: HTMLElement = document.getElementById('map');
-			let panelEle: HTMLElement = document.getElementById('panel');
-			self.map = new google.maps.Map(mapEle, {center: self.locationTracker.posicionActual, zoom: 12});
-			self.directionsDisplay.setPanel(panelEle);
-			self.directionsDisplay.setMap(self.map);
-			mapEle.classList.add('show-map');
-			self.locationTracker.marker = new google.maps.Marker({map: self.map, title: 'Aqui estoy!'});
-			self.locationTracker.marker.setPosition(self.locationTracker.posicionActual);
-			self.mostrarRutaEntre(self.viajeActual.origen, self.viajeActual.destino);
+		this.platform.ready().then(() => {
+			// Create map
+			let mapDiv: HTMLElement = document.getElementById('map');
+			let map = new google.maps.Map(mapDiv, {center: this.locationTracker.posicionActual, zoom: 12});
+			this.directionsDisplay.setMap(map);
+			// Create panel
+			let panelDiv: HTMLElement = document.getElementById('panel');
+			this.directionsDisplay.setPanel(panelDiv);
+			// Show map
+			mapDiv.classList.add('show-map');
+			this.locationTracker.marker = new google.maps.Marker({map: map, title: 'Aqui estoy!'});
+			this.locationTracker.marker.setPosition(this.locationTracker.posicionActual);
+			this.showRoute(this.viaje.origen, this.viaje.destino);
 		});
 	}
 
-	private mostrarRutaEntre(origen, destino){
-		var self = this;
-		self.directionsService.route({
+	private showRoute(origen, destino){
+		this.directionsService.route({
 			origin: origen,
 			destination: destino,
 			travelMode: google.maps.TravelMode.DRIVING,
 			avoidTolls: true
 		}, (response, status)=> {
 			if(status === google.maps.DirectionsStatus.OK) {
-				self.directionsDisplay.setDirections(response);
+				this.directionsDisplay.setDirections(response);
 			}else{
 				alert('No se pudieron cargar las direcciones debido a: ' + status);
 			}
-			//Esperar un cachito mas 
-			setTimeout(() => {self.global.stopLoading();}, 1000);
+			// Wait a little more
+			setTimeout(() => {this.global.stopLoading();}, 1000);
 		});  
 	}
+
+	goHome() {
+		this.global.loading();
+		this.navCtrl.setRoot(Home);
+	}
 	
-	comenzarViaje() {
-		var self = this;
-		self.viajeActual.en_proceso = 1;
-		self.locationTracker.inicializarArrays(self.id);
-		self.geolocation.getCurrentPosition().then(pos => {
+	startTrip() {
+		this.viaje.en_proceso = 1;
+		this.locationTracker.initializeArrays(this.viaje.id);
+		this.geolocation.getCurrentPosition().then(pos => {
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			let fechaNueva = self.global.getFecha(pos.timestamp);
-			self.locationTracker.guardarEnArrays(self.id, fechaNueva, posicionNueva, 0);
+			let fechaNueva = this.global.getDate(pos.timestamp);
+			this.locationTracker.saveInArrays(this.viaje.id, fechaNueva, posicionNueva, 0);
 		}).catch((error) => {
-			self.global.showMessage("Error al obtener la posicion inicial", error);
+			this.global.showMessage("Error al obtener la posicion inicial", error);
 		});
 	}
 	
-	finalizarViaje() {
-		var self = this;
-		let alert = self.alertCtrl.create({
-			title: 'Viaje ' + self.id,
+	finishTrip() {
+		let alert = this.alertCtrl.create({
+			title: 'Viaje ' + this.viaje.id,
 			message: 'Desea finalizar este viaje?',
 			buttons: [
 			{
@@ -113,7 +102,7 @@ export class Viaje {
 			{
 				text: 'Aceptar',
 				handler: () => {
-					self.detenerViaje();
+					this.stopTrip();
 				}
 			}
 			]
@@ -121,62 +110,54 @@ export class Viaje {
 		alert.present();
 	}
 	
-	detenerViaje() {
-		var self = this;
-		self.global.loading();
-		self.geolocation.getCurrentPosition().then(pos => {
-			let posicionVieja = self.locationTracker.ultima_posicion[self.id];
+	stopTrip() {
+		this.global.loading();
+		this.geolocation.getCurrentPosition().then(pos => {
+			let posicionVieja = this.locationTracker.ultima_posicion[this.viaje.id];
 			let posicionNueva = {lat: pos.coords.latitude, lng: pos.coords.longitude};
-			let fechaNueva = self.global.getFecha(pos.timestamp);
-			let distancia = self.global.calcularDistanciaEntre(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
-			//Mando la ultima posicion con su fecha y distancia para que sincronize la ultima entrada a la BDs
-			self.ultimoIngresoYDistanciaFinal(fechaNueva, posicionNueva, distancia);
+			let fechaNueva = this.global.getDate(pos.timestamp);
+			let distancia = this.global.calculateDistance(posicionVieja.lat, posicionNueva.lat, posicionVieja.lng, posicionNueva.lng);
+			// Send the last location with the date and the distance to sincronize the final position with the database
+			this.lastLocationAndFinish(fechaNueva, posicionNueva, distancia);
 		}).catch((error) => {
-			self.global.showMessage("Error al obtener la posicion final", error);
+			this.global.showMessage("Error al obtener la posicion final", error);
 		});
 	}
 	
-	ultimoIngresoYDistanciaFinal(fecha, posicion, distancia){
-		var self = this;
-		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: self.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
-		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
-			self.locationTracker.eliminarDatosViaje(self.id);
+	lastLocationAndFinish(fecha, posicion, distancia){
+		let myData = JSON.stringify({action: "distanciaTotal", viaje_id: this.viaje.id, fecha: fecha, latitud: posicion.lat, longitud: posicion.lng, distancia: distancia});
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
+			// Delete data from arrays
+			this.locationTracker.deleteTripData(this.viaje.id);
 			let distancia = parseFloat(data["_body"]);
-			self.global.mensaje("Distancia total recorrida", distancia.toFixed(2) + " Km");
+			this.global.message("Distancia total recorrida", distancia.toFixed(2) + " Km");
 			if(distancia > 0){
-				self.verificarCierreViaje();
+				this.verifyTripClose();
 			}else{
-				self.reiniciarViaje();
+				this.restartTrip();
 			}
 		}, 
 		error => {
-			self.global.showMessage("Error al calcular la distancia final", error);
+			this.global.showMessage("Error al calcular la distancia final", error);
 		});
 	}
 	
-	verificarCierreViaje(){
-		var self = this;
-		if(self.viajeActual.fechaValida){
-			self.navCtrl.setRoot(CerrarViaje, {viaje: self.viajeActual});
-			self.cargando = true;
-		}
-		else{
-			self.navCtrl.setRoot(Home);
-			self.cargando = false;
-		}
+	verifyTripClose(){
+		if(this.viaje.fechaValida)
+			this.navCtrl.setRoot(CerrarViaje, {viaje: this.viaje});
+		else
+			this.navCtrl.setRoot(Home);
 	}
 	
-	reiniciarViaje(){
-		var self = this;
-		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: self.id});
-		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
+	restartTrip(){
+		var myData = JSON.stringify({action: "reiniciarViaje", viaje_id: this.viaje.id});
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
 			console.log(data["_body"]);
-			self.viajeActual.en_proceso = 0;
-			self.cargando = true;
-			self.global.stopLoading();
+			this.viaje.en_proceso = 0;
+			this.global.stopLoading();
 		}, 
 		error => {
-			self.global.showMessage("Error al reiniciar el viaje", error);
+			this.global.showMessage("Error al reiniciar el viaje", error);
 		});
 	}
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { NavController } from 'ionic-angular';
 import { Storage } from '@ionic/storage';
+import { GlobalProvider } from "../../providers/global/global";
 import { Login } from '../login/login';
 import { LocationTracker } from "../../providers/location-tracker/location-tracker";
 
@@ -12,19 +13,15 @@ import { LocationTracker } from "../../providers/location-tracker/location-track
 export class Logout {
 
 	constructor(public navCtrl: NavController, 
-				private storage: Storage, 
+				private storage: Storage,
+				public global: GlobalProvider, 
 				public locationTracker: LocationTracker){
-					
-		var self = this;
-		self.storage.get('user').then((val) => {
-			console.log('Cerrando sesión de: ' + val.nombre);
-		});
-		if(self.locationTracker.cronEncendido)
-			self.locationTracker.stopTracking();
-		self.storage.remove('user');
-		self.storage.get('user').then((val) => {
-			self.navCtrl.setRoot(Login);
-			console.log(val);
-		});
+		
+		console.log('Cerrando sesión de: ' + this.global.user.nombre);
+		if(this.locationTracker.isCronOn())
+			this.locationTracker.stopTracking();
+		this.global.user = null;
+		this.storage.remove('user');
+		this.navCtrl.setRoot(Login);
 	}
 }

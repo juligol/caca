@@ -7,11 +7,14 @@ page-viaje {
 		  transition: opacity 150ms ease-in;
 		  display: block;
 		  &.show-map{
-			opacity: 1;
+				opacity: 1;
 		  }
 		}
 		.scroll{
 		  height: calc(40%);
 		}
+	}
+	.arrow-size {
+		font-size: 1.7em;
 	}
 }

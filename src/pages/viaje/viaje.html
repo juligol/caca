@@ -1,12 +1,17 @@
 <ion-header>
-  <ion-navbar>
-    <button menuToggle *ngIf="!viajeActual">
+  <ion-navbar hideBackButton>
+    <button menuToggle *ngIf="!viaje">
       <ion-icon name="menu"></ion-icon>
-    </button>
-	<ion-title>Viaje {{viajeActual.id}}</ion-title>
-	<ion-buttons end>
-		<button *ngIf="viajeActual.distancia_total_recorrida == 0 && viajeActual.en_proceso == 0 && viajeActual.status == 1" ion-button color="secondary" (click)="comenzarViaje()">Comenzar</button>
-		<button *ngIf="viajeActual.distancia_total_recorrida == 0 && viajeActual.en_proceso == 1 && viajeActual.status == 1" ion-button color="danger" (click)="finalizarViaje()">Finalizar</button>
+		</button>
+		<ion-buttons left>
+        <button ion-button (click)="goHome()">
+            <ion-icon class="arrow-size" name="arrow-back"></ion-icon>
+        </button>
+    </ion-buttons>
+		<ion-title>Viaje {{viaje.id}}</ion-title>
+		<ion-buttons end>
+			<button *ngIf="viaje.distancia_total_recorrida == 0 && viaje.en_proceso == 0 && viaje.status == 1" ion-button color="secondary" (click)="startTrip()">Comenzar</button>
+			<button *ngIf="viaje.distancia_total_recorrida == 0 && viaje.en_proceso == 1 && viaje.status == 1" ion-button color="danger" (click)="finishTrip()">Finalizar</button>
     </ion-buttons>
   </ion-navbar>
 </ion-header>

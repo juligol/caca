@@ -22,28 +22,27 @@ export class Password{
 	}
 	
 	passwordForm(){
-		var self = this;
-		self.global.loading();
-		self.form.value.action = "password";
-		var myData = JSON.stringify(self.form.value);
-		self.global.http.post(self.global.getLink(), myData).subscribe(data => {
+		this.global.loading();
+		this.form.value.action = "password";
+		var myData = JSON.stringify(this.form.value);
+		this.global.http.post(this.global.getLink(), myData).subscribe(data => {
 			var usuario = JSON.parse(data["_body"]);
 			if(usuario)
 			{
-				self.global.showMessage("OK", "E-mail enviado correctamente!!");
-				self.navCtrl.setRoot(Login);
+				this.global.showMessage("OK", "E-mail enviado correctamente!!");
+				this.navCtrl.setRoot(Login);
 			}
 			else
 			{
-				self.global.showMessage("Error", "E-mail incorrecto!!");
+				this.global.showMessage("Error", "E-mail incorrecto!!");
 			}
 		}, 
 		error => {
-			self.global.showMessage("Error al enviar la password", error);
+			this.global.showMessage("Error al enviar la password", error);
 		});
 	}
 	
-	volver() {
+	goBack() {
 		this.navCtrl.setRoot(Login);
 	}
 }

@@ -3,13 +3,13 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-    <ion-title>Cerrar viaje {{viajeActual.id}}</ion-title>
+    <ion-title>Cerrar viaje {{viaje.id}}</ion-title>
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
 	<div class="login-box">
-		<form [formGroup]="form" (ngSubmit)="cerrarViajeForm()">
+		<form [formGroup]="form" (ngSubmit)="closeTripForm()">
 			<ion-row>
 				<ion-col>
 					<ion-list inset>

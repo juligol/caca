@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MenuController } from 'ionic-angular';
 import { NavController } from 'ionic-angular';
-import { Storage } from '@ionic/storage';
+import { AlertController } from 'ionic-angular';
 import { LocationAccuracy } from '@ionic-native/location-accuracy';
 
 import { GlobalProvider } from "../../providers/global/global";
@@ -22,40 +22,18 @@ export class Home{
 
 	constructor(public menuCtrl: MenuController, 
 				private navCtrl: NavController,
-				private storage: Storage,
+				public alertCtrl: AlertController,
 				private locationAccuracy: LocationAccuracy,
 				public global: GlobalProvider,
 				public locationTracker: LocationTracker,
 				public viajesProvider: ViajesProvider){
 		
-		var self = this;
-		self.menuCtrl.enable(true);
-		
-		self.storage.get('user').then((val) => {
-			console.log('Hola ' + val.nombre);
-		});
-		
-		self.viajesProvider.cargarViajes();
-		
-		self.myCallbackFunction = (parametros) => {
-			return new Promise((resolve, reject) => {
-				if(parametros.cargando)
-					self.global.stopLoading();
-				self.menuCtrl.enable(true);
-				var viaje_id = parametros.viaje.id;
-				self.viajesProvider.viajes = self.viajesProvider.viajes.map((item) => {
-					if(item.id == viaje_id)
-						return parametros.viaje;
-					else
-						return item;
-				});
-				self.viajesProvider.inicializarListado(self.viajesProvider.viajes);
-				resolve();
-			});
-		}
+		this.menuCtrl.enable(true);
+		console.log('Hola ' + this.global.user.nombre);
+		this.viajesProvider.getTrips();
 	}
 	
-	verSubmenu(group) {
+	showSubmenu(group) {
 		if (this.isGroupShown(group)) {
 			this.shownGroup = null;
 		} else {
@@ -71,54 +49,69 @@ export class Home{
 		this.viajesProvider.doInfinite(infiniteScroll);
 	}
 	
-	buscarItems(evento: any) {
-		this.viajesProvider.buscarItems(evento);
+	searchItems(evento: any) {
+		this.viajesProvider.searchItems(evento);
 	}
 	
-	actualizarListado(refresher) {
-		this.viajesProvider.actualizarListado(refresher);
+	updateList(refresher) {
+		this.viajesProvider.updateList(refresher);
 	}
 	
-	preguntarRechazarViaje(event, item){
-		this.viajesProvider.preguntarRechazarViaje(event, item);
+	questionRefuseTrip(event, item){
+		this.global.loading();
+		let alert = this.alertCtrl.create({
+			title: 'Viaje ' + item.id,
+			message: 'Desea rechazar este viaje?',
+			buttons: [
+			{
+				text: 'Cancelar',
+				role: 'cancel',
+				handler: () => {this.global.stopLoading();}
+			},
+			{
+				text: 'Aceptar',
+				handler: () => {this.viajesProvider.refuseTrip(item);}
+			}
+			]
+		});
+		alert.present();
 	}
 	
-	cerrarViaje(event, item) {
+	closeTrip(event, item) {
 		this.navCtrl.setRoot(CerrarViaje, {viaje: item});
 	}
 	
-	verRecorrido(event, item) {
+	showTravel(event, item) {
 		this.global.loading();
-		this.verificarGPS(item);
-		//this.irAlViaje(item);
+		this.verifyGPS(item);
+		//this.openTrip(item);
 	}
 	
-	verificarGPS(item){
-		var self = this;
-		self.locationAccuracy.canRequest().then((canRequest: boolean) => {
+	verifyGPS(item){
+		this.locationAccuracy.canRequest().then((canRequest: boolean) => {
 			if(canRequest) {
 				// the accuracy option will be ignored by iOS
-				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => self.irAlViaje(item),
-					error => self.global.stopLoading()
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.openTrip(item),
+					error => this.global.stopLoading()
 				);
 			}else{
 				// the accuracy option will be ignored by iOS
-				self.locationAccuracy.request(self.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
-					() => self.irAlViaje(item),
-					error => self.global.stopLoading()
+				this.locationAccuracy.request(this.locationAccuracy.REQUEST_PRIORITY_HIGH_ACCURACY).then(
+					() => this.openTrip(item),
+					error => this.global.stopLoading()
 				);
 			}
 		});
 	}
 	
-	irAlViaje(item){
-		var self = this;
-		if(!self.locationTracker.cronEncendido()){
-			self.locationTracker.startTracking();
+	openTrip(item){
+		if(!this.locationTracker.isCronOn()){
+			this.locationTracker.startTracking();
 		}else{
-			console.log('Back y front activos');
+			console.log('Back y Front activos');
 		}
-		self.navCtrl.push(Viaje, { item: item, callback: self.myCallbackFunction });
+		//this.navCtrl.push(Viaje, { item: item, callback: this.myCallbackFunction });
+		this.navCtrl.setRoot(Viaje, { item: item });
 	}
 }

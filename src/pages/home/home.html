@@ -3,18 +3,18 @@
     <button ion-button menuToggle>
       <ion-icon name="menu"></ion-icon>
     </button>
-	<ion-searchbar (ionInput)="buscarItems($event)" placeholder="Buscar" ></ion-searchbar>
+	<ion-searchbar (ionInput)="searchItems($event)" placeholder="Buscar" ></ion-searchbar>
     <!--ion-title>Home</ion-title-->
   </ion-navbar>
 </ion-header>
 
 <ion-content padding>
 	<!--h2 text-center>Listado de viajes</h2-->
-	<ion-refresher (ionRefresh)="actualizarListado($event)">
+	<ion-refresher (ionRefresh)="updateList($event)">
 		<ion-refresher-content pullingIcon="arrow-dropdown" pullingText="Arrastrar para actualizar" refreshingSpinner="circles" refreshingText="Actualizando..."></ion-refresher-content>
 	</ion-refresher>
 	<ion-list>
-		<ion-item *ngFor="let item of viajesProvider.items; let i=index" (click)="verSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
+		<ion-item *ngFor="let item of viajesProvider.items; let i=index" (click)="showSubmenu(i)" [ngClass]="{active: isGroupShown(i)}">
 			<ion-icon *ngIf="item.status != 1" name="pin"></ion-icon>
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" name="checkmark-circle"></ion-icon> 
 			<ion-icon *ngIf="item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida == 0" name="car"></ion-icon> 
@@ -40,9 +40,9 @@
 				<ion-item submenu-item *ngIf="item.status != 1" >Distancia recorrida: <b>{{ item.distancia_total_recorrida }} km</b></ion-item>
 				<ion-item submenu-item>
 					<ion-buttons end>
-						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" color="danger" (click)="preguntarRechazarViaje($event, item)" clear>Rechazar</button>
-						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="cerrarViaje($event, item)" clear>Cerrar</button>
-						<button ion-button (click)="verRecorrido($event, item)" clear>Ver</button>
+						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 0 && item.distancia_total_recorrida == 0" color="danger" (click)="questionRefuseTrip($event, item)" clear>Rechazar</button>
+						<button ion-button *ngIf="item.fechaValida && item.status == 1 && item.en_proceso == 1 && item.distancia_total_recorrida > 0" color="danger" (click)="closeTrip($event, item)" clear>Cerrar</button>
+						<button ion-button (click)="showTravel($event, item)" clear>Ver</button>
 					</ion-buttons>
 				</ion-item>
 			</ion-item-group>
